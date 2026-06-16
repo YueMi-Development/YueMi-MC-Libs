@@ -45,6 +45,12 @@ public final class ConfigMigrator {
                     config.set("hooks.economy.provider", "Vault");
                 }
                 break;
+            case 1:
+                // Migration logic from version 1 to 2
+                if (!config.contains("providers.minecraft.match-mode")) {
+                    config.set("providers.minecraft.match-mode", "ID");
+                }
+                break;
             default:
                 break;
         }

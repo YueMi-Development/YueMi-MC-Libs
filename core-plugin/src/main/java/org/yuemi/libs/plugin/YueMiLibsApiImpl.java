@@ -4,11 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import org.yuemi.libs.api.YueMiLibsApi;
 import org.yuemi.libs.api.economy.EconomyApi;
 import org.yuemi.libs.plugin.economy.EconomyApiImpl;
-import org.yuemi.libs.plugin.economy.VaultEconomyProvider;
+import org.yuemi.libs.api.items.ItemsApi;
+import org.yuemi.libs.plugin.items.ItemsApiImpl;
 
 final class YueMiLibsApiImpl implements YueMiLibsApi {
 
     private final EconomyApiImpl economy = new EconomyApiImpl();
+    private final ItemsApiImpl items = new ItemsApiImpl();
 
     @Override
     public @NotNull EconomyApi getEconomy() {
@@ -17,5 +19,14 @@ final class YueMiLibsApiImpl implements YueMiLibsApi {
 
     EconomyApiImpl getEconomyImpl() {
         return economy;
+    }
+
+    @Override
+    public @NotNull ItemsApi getItems() {
+        return items;
+    }
+
+    public ItemsApiImpl getItemsImpl() {
+        return items;
     }
 }

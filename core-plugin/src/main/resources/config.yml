@@ -1,7 +1,7 @@
 # YueMi Libs Configuration
 
 # Do not change this version!
-config-version: 1
+config-version: 2
 
 # Configure third-party hooks and integration
 hooks:
@@ -9,3 +9,13 @@ hooks:
     enabled: true
     # The economy provider to hook (e.g. "Vault")
     provider: "Vault"
+
+# Configuration for item providers
+providers:
+  minecraft:
+    # How strictly to match items when checking or taking them from player inventories.
+    # Options:
+    # - ID: Matches only by Material ID type (e.g. minecraft:stone)
+    # - CUSTOM_MODEL_DATA: Matches by Material ID type and Custom Model Data
+    # - NBT: Matches strictly (all metadata / NBT must match)
+    match-mode: "ID"

@@ -7,7 +7,7 @@ import org.yuemi.libs.api.YueMiLibsApi;
 public final class YueMiLibsPlugin extends JavaPlugin {
 
     private YueMiLibsApiImpl api;
-    private final int CONFIG_VERSION = 1;
+    private final int CONFIG_VERSION = 2;
 
     @Override
     public void onEnable() {
@@ -19,6 +19,19 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         new ConfigMigrator(this, CONFIG_VERSION).migrate();
 
         this.api = new YueMiLibsApiImpl();
+
+        // Read item match mode
+        String matchModeStr = getConfig().getString("providers.minecraft.match-mode", "ID").toUpperCase();
+        org.yuemi.libs.plugin.items.MatchMode matchMode;
+        try {
+            matchMode = org.yuemi.libs.plugin.items.MatchMode.valueOf(matchModeStr);
+        } catch (IllegalArgumentException e) {
+            getLogger().warning("Invalid match-mode '" + matchModeStr + "' configured. Falling back to ID.");
+            matchMode = org.yuemi.libs.plugin.items.MatchMode.ID;
+        }
+
+        // Register default vanilla item provider
+        api.getItemsImpl().registerProvider("minecraft", new org.yuemi.libs.plugin.items.MinecraftItemProvider(matchMode));
 
         // Check economy configuration
         boolean economyEnabled = getConfig().getBoolean("hooks.economy.enabled", true);

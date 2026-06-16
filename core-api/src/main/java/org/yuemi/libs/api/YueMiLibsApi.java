@@ -15,4 +15,12 @@ public interface YueMiLibsApi {
      */
     @NotNull
     EconomyApi getEconomy();
+
+    /**
+     * Gets the items module API.
+     *
+     * @return the items API manager
+     */
+    @NotNull
+    org.yuemi.libs.api.items.ItemsApi getItems();
 }
