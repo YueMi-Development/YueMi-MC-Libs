@@ -15,11 +15,8 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
 
-        // Check version
-        int configVersion = getConfig().getInt("config-version", 0);
-        if (configVersion < CONFIG_VERSION) {
-            getLogger().warning("Your config.yml is outdated! Please regenerate it.");
-        }
+        // Check and migrate version
+        new ConfigMigrator(this, CONFIG_VERSION).migrate();
 
         this.api = new YueMiLibsApiImpl();
 
