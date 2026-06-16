@@ -7,7 +7,7 @@ import org.yuemi.libs.api.YueMiLibsApi;
 public final class YueMiLibsPlugin extends JavaPlugin {
 
     private YueMiLibsApiImpl api;
-    private final int CONFIG_VERSION = 2;
+    private final int CONFIG_VERSION = 3;
 
     @Override
     public void onEnable() {
@@ -32,6 +32,13 @@ public final class YueMiLibsPlugin extends JavaPlugin {
 
         // Register default vanilla item provider
         api.getItemsImpl().registerProvider("minecraft", new org.yuemi.libs.plugin.items.MinecraftItemProvider(matchMode));
+
+        // Register CraftEngine item provider if enabled
+        boolean craftEngineEnabled = getConfig().getBoolean("hooks.items.craftengine.enabled", true);
+        if (craftEngineEnabled && getServer().getPluginManager().isPluginEnabled("CraftEngine")) {
+            api.getItemsImpl().registerProvider("craftengine", new org.yuemi.libs.plugin.items.CraftEngineItemProvider());
+            getLogger().info("Successfully hooked into CraftEngine for items!");
+        }
 
         // Check economy configuration
         boolean economyEnabled = getConfig().getBoolean("hooks.economy.enabled", true);

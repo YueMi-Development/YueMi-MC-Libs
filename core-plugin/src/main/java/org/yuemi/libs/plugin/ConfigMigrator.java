@@ -51,6 +51,12 @@ public final class ConfigMigrator {
                     config.set("providers.minecraft.match-mode", "ID");
                 }
                 break;
+            case 2:
+                // Migration logic from version 2 to 3
+                if (!config.contains("hooks.items.craftengine.enabled")) {
+                    config.set("hooks.items.craftengine.enabled", true);
+                }
+                break;
             default:
                 break;
         }

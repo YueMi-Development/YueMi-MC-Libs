@@ -18,6 +18,8 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
+    compileOnly("net.momirealms:craft-engine-bukkit:26.6.2")
+    compileOnly("net.momirealms:craft-engine-core:26.6.2")
 }
 
 tasks.processResources {
@@ -62,3 +64,4 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
 tasks.build {
     dependsOn(tasks.named("shadowJar"))
 }
+

@@ -18,6 +18,7 @@ subprojects {
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://repo.momirealms.net/releases/")
         maven("https://jitpack.io")
         maven("https://repo.dmulloy2.net/repository/public/")
     }

@@ -1,7 +1,7 @@
 # YueMi Libs Configuration
 
 # Do not change this version!
-config-version: 2
+config-version: 3
 
 # Configure third-party hooks and integration
 hooks:
@@ -9,6 +9,10 @@ hooks:
     enabled: true
     # The economy provider to hook (e.g. "Vault")
     provider: "Vault"
+  items:
+    # Whether to hook into CraftEngine to support its custom items
+    craftengine:
+      enabled: true
 
 # Configuration for item providers
 providers:
