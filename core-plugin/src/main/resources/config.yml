@@ -1,0 +1,11 @@
+# YueMi Libs Configuration
+
+# Do not change this version!
+config-version: 1
+
+# Configure third-party hooks and integration
+hooks:
+  economy:
+    enabled: true
+    # The economy provider to hook (e.g. "Vault")
+    provider: "Vault"
