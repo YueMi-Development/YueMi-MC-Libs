@@ -50,7 +50,7 @@ tasks.jar {
             "Implementation-Title" to pluginName,
             "Implementation-Version" to pluginVersion,
             "Implementation-Vendor" to developerName,
-            "License" to "MIT"
+            "License" to "LGPL-3.0-or-later"
         )
     }
 }
