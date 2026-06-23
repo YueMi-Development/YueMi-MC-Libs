@@ -36,6 +36,12 @@ public interface GuiItem {
      */
     void onClick(@NotNull GuiClickContext context);
 
+    /**
+     * Creates a new builder for constructing a {@link GuiItem}.
+     *
+     * @return a new GuiItem builder
+     * @throws IllegalStateException if the GUI API provider is not registered
+     */
     static Builder builder() {
         var api = GuiProvider.getApi();
         if (api == null) {
@@ -49,18 +55,47 @@ public interface GuiItem {
      */
     interface Builder {
 
+        /**
+         * Sets a static item stack for the GUI item.
+         *
+         * @param itemStack the item stack to display
+         * @return this builder instance for chaining
+         */
         @NotNull
         Builder item(@NotNull ItemStack itemStack);
 
+        /**
+         * Sets a dynamic item provider function to resolve the item stack for a player.
+         *
+         * @param itemProvider the function to compute the item stack based on the player
+         * @return this builder instance for chaining
+         */
         @NotNull
         Builder item(@NotNull Function<Player, ItemStack> itemProvider);
 
+        /**
+         * Sets a condition that determines whether this item should render for a player.
+         *
+         * @param condition the condition predicate
+         * @return this builder instance for chaining
+         */
         @NotNull
         Builder condition(@NotNull Predicate<Player> condition);
 
+        /**
+         * Sets the handler to execute when the GUI item is clicked.
+         *
+         * @param handler the click interaction handler
+         * @return this builder instance for chaining
+         */
         @NotNull
         Builder onClick(@NotNull BiConsumer<Player, GuiClickContext> handler);
 
+        /**
+         * Builds the GUI item based on the configured properties.
+         *
+         * @return the constructed GuiItem
+         */
         @NotNull
         GuiItem build();
     }
