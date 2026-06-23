@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 val pluginName: String by project
@@ -31,13 +32,31 @@ java {
 tasks.jar {
     archiveBaseName.set(pluginName)
     archiveVersion.set(project.version.toString())
-    archiveClassifier.set("")
+    archiveClassifier.set("raw") // We set this to raw so the shaded jar can be the main artifact
 }
 
 tasks.named<Jar>("sourcesJar") {
     archiveBaseName.set(pluginName)
     archiveVersion.set(project.version.toString())
     archiveClassifier.set("sources")
+    
+    // Include sources of the sub-modules
+    from(project(":module-economy").sourceSets.main.get().allSource)
+    from(project(":module-items").sourceSets.main.get().allSource)
+    from(project(":module-gui").sourceSets.main.get().allSource)
+}
+
+tasks.named<Javadoc>("javadoc") {
+    // Include sub-modules sources for javadoc generation
+    source(project(":module-economy").sourceSets.main.get().allSource)
+    source(project(":module-items").sourceSets.main.get().allSource)
+    source(project(":module-gui").sourceSets.main.get().allSource)
+    
+    classpath += files(
+        project(":module-economy").sourceSets.main.get().compileClasspath,
+        project(":module-items").sourceSets.main.get().compileClasspath,
+        project(":module-gui").sourceSets.main.get().compileClasspath
+    )
 }
 
 tasks.named<Jar>("javadocJar") {
@@ -46,10 +65,28 @@ tasks.named<Jar>("javadocJar") {
     archiveClassifier.set("javadoc")
 }
 
+tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+    archiveBaseName.set(pluginName)
+    archiveVersion.set(project.version.toString())
+    archiveClassifier.set("") // Main artifact classifier is empty
+
+    // Merge compiled classes and resources of the sub-modules
+    from(project(":module-economy").sourceSets.main.get().output)
+    from(project(":module-items").sourceSets.main.get().output)
+    from(project(":module-gui").sourceSets.main.get().output)
+}
+
+tasks.build {
+    dependsOn(tasks.named("shadowJar"))
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["java"])
+            // Publish shadowJar as the main api artifact, alongside sources and javadoc jars
+            artifact(tasks.named("shadowJar"))
+            artifact(tasks.named("sourcesJar"))
+            artifact(tasks.named("javadocJar"))
 
             artifactId = "$pluginName-api"
 

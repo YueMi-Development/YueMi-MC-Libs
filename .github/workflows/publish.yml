@@ -46,6 +46,9 @@ jobs:
             echo "Versions match. No update needed."
           fi
 
+      - name: Run Tests
+        run: ./gradlew test --no-daemon
+
       - name: Publish to Yuemi Maven
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
