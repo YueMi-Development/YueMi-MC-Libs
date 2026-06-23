@@ -58,6 +58,46 @@ public final class GuiItemImpl implements GuiItem {
         }
 
         @Override
+        public @NotNull GuiItem.Builder item(@NotNull String key) {
+            return item(key, 1);
+        }
+
+        @Override
+        public @NotNull GuiItem.Builder item(@NotNull String key, int amount) {
+            this.itemProvider = player -> {
+                var api = org.yuemi.libs.api.items.ItemsApiProvider.getApi();
+                if (api == null) {
+                    throw new IllegalStateException("ItemsApi provider is not registered!");
+                }
+                ItemStack item = api.getItem(key, amount);
+                return item != null ? item : new ItemStack(org.bukkit.Material.AIR);
+            };
+            return this;
+        }
+
+        @Override
+        public @NotNull GuiItem.Builder itemKey(@NotNull Function<Player, String> keyProvider) {
+            return itemKey(keyProvider, 1);
+        }
+
+        @Override
+        public @NotNull GuiItem.Builder itemKey(@NotNull Function<Player, String> keyProvider, int amount) {
+            this.itemProvider = player -> {
+                var api = org.yuemi.libs.api.items.ItemsApiProvider.getApi();
+                if (api == null) {
+                    throw new IllegalStateException("ItemsApi provider is not registered!");
+                }
+                String key = keyProvider.apply(player);
+                if (key == null) {
+                    return new ItemStack(org.bukkit.Material.AIR);
+                }
+                ItemStack item = api.getItem(key, amount);
+                return item != null ? item : new ItemStack(org.bukkit.Material.AIR);
+            };
+            return this;
+        }
+
+        @Override
         public @NotNull GuiItem.Builder condition(@NotNull Predicate<Player> condition) {
             this.condition = condition;
             return this;

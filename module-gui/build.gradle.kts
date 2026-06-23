@@ -18,6 +18,10 @@ require(developerId.isNotBlank())
 require(developerName.isNotBlank())
 
 
+dependencies {
+    compileOnly(project(":module-items"))
+}
+
 java {
     withSourcesJar()
     withJavadocJar()

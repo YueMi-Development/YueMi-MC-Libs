@@ -62,6 +62,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
 
         // Register GUI provider and listener
         org.yuemi.libs.api.gui.GuiProvider.register(api.getGui());
+        org.yuemi.libs.api.items.ItemsApiProvider.register(api.getItems());
         getServer().getPluginManager().registerEvents(new org.yuemi.libs.plugin.gui.GuiListener(), this);
 
         getServer().getServicesManager().register(
@@ -77,6 +78,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         org.yuemi.libs.api.gui.GuiProvider.register(null);
+        org.yuemi.libs.api.items.ItemsApiProvider.register(null);
         if (api != null) {
             getServer().getServicesManager().unregister(YueMiLibsApi.class, api);
         }

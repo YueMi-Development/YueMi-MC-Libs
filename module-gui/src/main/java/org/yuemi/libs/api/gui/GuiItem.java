@@ -74,6 +74,46 @@ public interface GuiItem {
         Builder item(@NotNull Function<Player, ItemStack> itemProvider);
 
         /**
+         * Sets a key (namespace:id) for the GUI item. The item stack will be retrieved from the Items module API.
+         *
+         * @param key the namespace:id item key (e.g. "minecraft:diamond_sword")
+         * @return this builder instance for chaining
+         */
+        @NotNull
+        Builder item(@NotNull String key);
+
+        /**
+         * Sets a key (namespace:id) and amount for the GUI item. The item stack will be retrieved from the Items module API.
+         *
+         * @param key the namespace:id item key (e.g. "minecraft:diamond_sword")
+         * @param amount the item quantity
+         * @return this builder instance for chaining
+         */
+        @NotNull
+        Builder item(@NotNull String key, int amount);
+
+        /**
+         * Sets a dynamic item key provider function to resolve the item key (namespace:id) for a player.
+         * The resolved key will be retrieved from the Items module API.
+         *
+         * @param keyProvider the function to compute the item key based on the player
+         * @return this builder instance for chaining
+         */
+        @NotNull
+        Builder itemKey(@NotNull Function<Player, String> keyProvider);
+
+        /**
+         * Sets a dynamic item key provider function and a static amount to resolve the item for a player.
+         * The resolved key will be retrieved from the Items module API.
+         *
+         * @param keyProvider the function to compute the item key based on the player
+         * @param amount the item quantity
+         * @return this builder instance for chaining
+         */
+        @NotNull
+        Builder itemKey(@NotNull Function<Player, String> keyProvider, int amount);
+
+        /**
          * Sets a condition that determines whether this item should render for a player.
          *
          * @param condition the condition predicate
