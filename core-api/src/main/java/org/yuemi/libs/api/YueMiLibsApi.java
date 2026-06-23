@@ -23,4 +23,12 @@ public interface YueMiLibsApi {
      */
     @NotNull
     org.yuemi.libs.api.items.ItemsApi getItems();
+
+    /**
+     * Gets the GUI module API.
+     *
+     * @return the GUI API manager
+     */
+    @NotNull
+    org.yuemi.libs.api.gui.GuiApi getGui();
 }
