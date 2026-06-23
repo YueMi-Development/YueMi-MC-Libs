@@ -18,7 +18,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         // Check and migrate version
         new ConfigMigrator(this, CONFIG_VERSION).migrate();
 
-        this.api = new YueMiLibsApiImpl();
+        this.api = new YueMiLibsApiImpl(getDescription().getVersion());
 
         // Read item match mode
         String matchModeStr = getConfig().getString("providers.minecraft.match-mode", "ID").toUpperCase();
