@@ -17,11 +17,6 @@ require(repoUrl.isNotBlank())
 require(developerId.isNotBlank())
 require(developerName.isNotBlank())
 
-dependencies {
-    api(project(":module-economy"))
-    api(project(":module-items"))
-    api(project(":module-gui"))
-}
 
 java {
     withSourcesJar()
@@ -29,19 +24,19 @@ java {
 }
 
 tasks.jar {
-    archiveBaseName.set(pluginName)
+    archiveBaseName.set("$pluginName-gui")
     archiveVersion.set(project.version.toString())
     archiveClassifier.set("")
 }
 
 tasks.named<Jar>("sourcesJar") {
-    archiveBaseName.set(pluginName)
+    archiveBaseName.set("$pluginName-gui")
     archiveVersion.set(project.version.toString())
     archiveClassifier.set("sources")
 }
 
 tasks.named<Jar>("javadocJar") {
-    archiveBaseName.set(pluginName)
+    archiveBaseName.set("$pluginName-gui")
     archiveVersion.set(project.version.toString())
     archiveClassifier.set("javadoc")
 }
@@ -51,11 +46,11 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
 
-            artifactId = "$pluginName-api"
+            artifactId = "$pluginName-gui"
 
             pom {
-                name.set("$pluginName-api")
-                description.set("Public API for $pluginName (PaperMC)")
+                name.set("$pluginName-gui")
+                description.set("GUI module API for $pluginName (PaperMC)")
                 url.set(repoUrl)
 
                 licenses {

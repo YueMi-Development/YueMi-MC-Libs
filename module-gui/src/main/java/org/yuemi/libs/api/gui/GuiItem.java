@@ -37,11 +37,11 @@ public interface GuiItem {
     void onClick(@NotNull GuiClickContext context);
 
     static Builder builder() {
-        var api = org.yuemi.libs.api.YueMiLibsProvider.getApi();
+        var api = GuiProvider.getApi();
         if (api == null) {
-            throw new IllegalStateException("YueMiLibsApi is not registered!");
+            throw new IllegalStateException("GuiApi provider is not registered!");
         }
-        return api.getGui().createItemBuilder();
+        return api.createItemBuilder();
     }
 
     /**

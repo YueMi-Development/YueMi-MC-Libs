@@ -22,4 +22,9 @@ subprojects {
         maven("https://jitpack.io")
         maven("https://repo.dmulloy2.net/repository/public/")
     }
+
+    dependencies {
+        val paperApiVersion = property("paperApiVersion") as String
+        add("compileOnly", "io.papermc.paper:paper-api:$paperApiVersion")
+    }
 }
