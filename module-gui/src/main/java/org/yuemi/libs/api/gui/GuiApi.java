@@ -22,4 +22,20 @@ public interface GuiApi {
      */
     @NotNull
     GuiItem.Builder createItemBuilder();
+
+    /**
+     * Creates a new fluent Anvil GUI builder for text input.
+     *
+     * @return a new Anvil GUI builder
+     */
+    @NotNull
+    AnvilInputBuilder createAnvilInputBuilder();
+
+    /**
+     * Creates a new fluent Sign GUI builder for text input.
+     *
+     * @return a new Sign GUI builder
+     */
+    @NotNull
+    SignInputBuilder createSignInputBuilder();
 }

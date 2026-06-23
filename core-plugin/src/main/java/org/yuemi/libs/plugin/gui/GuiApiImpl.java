@@ -16,4 +16,14 @@ public final class GuiApiImpl implements GuiApi {
     public @NotNull GuiItem.Builder createItemBuilder() {
         return new GuiItemImpl.BuilderImpl();
     }
+
+    @Override
+    public @NotNull org.yuemi.libs.api.gui.AnvilInputBuilder createAnvilInputBuilder() {
+        return new AnvilInputBuilderImpl();
+    }
+
+    @Override
+    public @NotNull org.yuemi.libs.api.gui.SignInputBuilder createSignInputBuilder() {
+        return new SignInputBuilderImpl();
+    }
 }
