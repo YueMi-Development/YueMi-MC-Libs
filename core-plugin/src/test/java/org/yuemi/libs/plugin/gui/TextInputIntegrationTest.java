@@ -1,7 +1,9 @@
 package org.yuemi.libs.plugin.gui;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
@@ -15,8 +17,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.yuemi.libs.api.gui.AnvilInputBuilder;
+import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.SignInputBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,10 +38,14 @@ public class TextInputIntegrationTest {
     private UUID playerUuid;
     private InventoryView mockView;
     private Inventory mockInventory;
+    private Plugin mockPlugin;
+    private Server mockServer;
+    private BukkitScheduler mockScheduler;
 
     @BeforeEach
     public void setUp() {
-        listener = new GuiListener();
+        mockPlugin = mock(Plugin.class);
+        listener = new GuiListener(mockPlugin);
         mockPlayer = mock(Player.class);
         playerUuid = UUID.randomUUID();
         when(mockPlayer.getUniqueId()).thenReturn(playerUuid);
@@ -54,6 +64,28 @@ public class TextInputIntegrationTest {
             }
             return null;
         });
+
+        // Setup mock server for scheduler task scheduling
+        mockServer = mock(Server.class);
+        mockScheduler = mock(BukkitScheduler.class);
+        when(mockServer.getScheduler()).thenReturn(mockScheduler);
+        setBukkitServer(mockServer);
+    }
+
+    private void setBukkitServer(Server server) {
+        try {
+            java.lang.reflect.Field field = Bukkit.class.getDeclaredField("server");
+            field.setAccessible(true);
+            field.set(null, server);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @AfterEach
+    public void tearDown() {
+        // Reset the server to prevent leakage across tests
+        setBukkitServer(null);
     }
 
     @Test
@@ -141,6 +173,22 @@ public class TextInputIntegrationTest {
     }
 
     @Test
+    public void testAnvilClosePolicyReopen() {
+        AnvilInputBuilder builder = new AnvilInputBuilderImpl()
+                .closePolicy(ClosePolicy.REOPEN);
+
+        AnvilInputHolder holder = new AnvilInputHolder((AnvilInputBuilderImpl) builder);
+        when(mockInventory.getHolder()).thenReturn(holder);
+        holder.setInventory(mockInventory);
+
+        InventoryCloseEvent closeEvent = new InventoryCloseEvent(mockView);
+        listener.onInventoryClose(closeEvent);
+
+        // Verify task was scheduled to reopen
+        verify(mockScheduler).runTask(eq(mockPlugin), any(Runnable.class));
+    }
+
+    @Test
     public void testSignSubmitAndRestore() {
         AtomicReference<String> submittedText = new AtomicReference<>();
         Location mockLocation = mock(Location.class);
@@ -153,7 +201,10 @@ public class TextInputIntegrationTest {
                 mockLocation,
                 mockState,
                 (player, text) -> submittedText.set(text),
-                10
+                10,
+                ClosePolicy.CLOSE,
+                "-------------",
+                mock(SignInputBuilderImpl.class)
         );
 
         SignInputBuilderImpl.ACTIVE_SESSIONS.put(mockPlayer, session);
@@ -168,5 +219,36 @@ public class TextInputIntegrationTest {
         assertEquals("HelloWorld", submittedText.get()); // Truncated to 10 chars
         assertFalse(SignInputBuilderImpl.ACTIVE_SESSIONS.containsKey(mockPlayer));
         verify(mockBlock).setBlockData(any(), eq(false));
+    }
+
+    @Test
+    public void testSignReopenIfCancelled() {
+        SignInputBuilderImpl mockBuilder = mock(SignInputBuilderImpl.class);
+        Location mockLocation = mock(Location.class);
+        Block mockBlock = mock(Block.class);
+        when(mockLocation.getBlock()).thenReturn(mockBlock);
+        BlockState mockState = mock(BlockState.class);
+
+        SignInputBuilderImpl.SignSession session = new SignInputBuilderImpl.SignSession(
+                mockLocation,
+                mockState,
+                (player, text) -> {},
+                10,
+                ClosePolicy.REOPEN,
+                "initialText",
+                mockBuilder
+        );
+
+        SignInputBuilderImpl.ACTIVE_SESSIONS.put(mockPlayer, session);
+
+        Block signBlock = mock(Block.class);
+        // lines has "initialText" unchanged
+        String[] lines = new String[]{"-------------", "initialText", "-------------", "description"};
+        SignChangeEvent event = new SignChangeEvent(signBlock, mockPlayer, lines);
+
+        listener.onSignChange(event);
+
+        assertTrue(event.isCancelled());
+        verify(mockScheduler).runTask(eq(mockPlugin), any(Runnable.class));
     }
 }

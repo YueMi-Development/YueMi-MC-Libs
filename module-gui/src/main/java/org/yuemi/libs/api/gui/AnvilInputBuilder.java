@@ -67,6 +67,15 @@ public interface AnvilInputBuilder {
     AnvilInputBuilder onClose(@NotNull Consumer<Player> callback);
 
     /**
+     * Sets the close policy for this Anvil GUI.
+     *
+     * @param policy the close policy
+     * @return this builder
+     */
+    @NotNull
+    AnvilInputBuilder closePolicy(@NotNull ClosePolicy policy);
+
+    /**
      * Opens the anvil GUI for the specified player.
      *
      * @param player the player

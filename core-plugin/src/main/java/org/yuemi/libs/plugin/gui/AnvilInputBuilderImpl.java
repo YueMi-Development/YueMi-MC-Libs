@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.yuemi.libs.api.gui.AnvilInputBuilder;
+import org.yuemi.libs.api.gui.ClosePolicy;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -19,6 +20,7 @@ public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
     private int maxLength = Integer.MAX_VALUE;
     private BiConsumer<Player, String> onSubmit = (player, text) -> {};
     private Consumer<Player> onClose = player -> {};
+    private ClosePolicy closePolicy = ClosePolicy.CLOSE;
 
     @Override
     public @NotNull AnvilInputBuilder title(@NotNull String title) {
@@ -56,6 +58,12 @@ public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
         return this;
     }
 
+    @Override
+    public @NotNull AnvilInputBuilder closePolicy(@NotNull ClosePolicy policy) {
+        this.closePolicy = policy;
+        return this;
+    }
+
     public @NotNull String getTitle() {
         return title;
     }
@@ -74,6 +82,10 @@ public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
 
     public @NotNull Consumer<Player> getOnClose() {
         return onClose;
+    }
+
+    public @NotNull ClosePolicy getClosePolicy() {
+        return closePolicy;
     }
 
     @Override

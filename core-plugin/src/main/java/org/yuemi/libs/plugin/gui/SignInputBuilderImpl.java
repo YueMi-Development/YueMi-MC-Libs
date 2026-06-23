@@ -8,6 +8,7 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.SignInputBuilder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,7 @@ public final class SignInputBuilderImpl implements SignInputBuilder {
     private String description = "";
     private int maxLength = Integer.MAX_VALUE;
     private BiConsumer<Player, String> onSubmit = (player, text) -> {};
+    private ClosePolicy closePolicy = ClosePolicy.CLOSE;
 
     @Override
     public @NotNull SignInputBuilder initialText(@NotNull String text) {
@@ -43,6 +45,12 @@ public final class SignInputBuilderImpl implements SignInputBuilder {
     @Override
     public @NotNull SignInputBuilder onSubmit(@NotNull BiConsumer<Player, String> callback) {
         this.onSubmit = callback;
+        return this;
+    }
+
+    @Override
+    public @NotNull SignInputBuilder closePolicy(@NotNull ClosePolicy policy) {
+        this.closePolicy = policy;
         return this;
     }
 
@@ -70,7 +78,7 @@ public final class SignInputBuilderImpl implements SignInputBuilder {
         sign.update(true, false);
 
         // Map the session
-        ACTIVE_SESSIONS.put(player, new SignSession(loc, originalState, onSubmit, maxLength));
+        ACTIVE_SESSIONS.put(player, new SignSession(loc, originalState, onSubmit, maxLength, closePolicy, initialText, this));
 
         // Open the editor
         player.openSign(sign);
@@ -81,12 +89,18 @@ public final class SignInputBuilderImpl implements SignInputBuilder {
         private final BlockState originalState;
         private final BiConsumer<Player, String> onSubmit;
         private final int maxLength;
+        private final ClosePolicy closePolicy;
+        private final String initialText;
+        private final SignInputBuilderImpl builder;
 
-        public SignSession(Location location, BlockState originalState, BiConsumer<Player, String> onSubmit, int maxLength) {
+        public SignSession(Location location, BlockState originalState, BiConsumer<Player, String> onSubmit, int maxLength, ClosePolicy closePolicy, String initialText, SignInputBuilderImpl builder) {
             this.location = location;
             this.originalState = originalState;
             this.onSubmit = onSubmit;
             this.maxLength = maxLength;
+            this.closePolicy = closePolicy;
+            this.initialText = initialText;
+            this.builder = builder;
         }
 
         public Location getLocation() {
@@ -99,6 +113,18 @@ public final class SignInputBuilderImpl implements SignInputBuilder {
 
         public int getMaxLength() {
             return maxLength;
+        }
+
+        public ClosePolicy getClosePolicy() {
+            return closePolicy;
+        }
+
+        public String getInitialText() {
+            return initialText;
+        }
+
+        public SignInputBuilderImpl getBuilder() {
+            return builder;
         }
 
         public void restore() {

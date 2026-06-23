@@ -63,7 +63,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         // Register GUI provider and listener
         org.yuemi.libs.api.gui.GuiProvider.register(api.getGui());
         org.yuemi.libs.api.items.ItemsApiProvider.register(api.getItems());
-        getServer().getPluginManager().registerEvents(new org.yuemi.libs.plugin.gui.GuiListener(), this);
+        getServer().getPluginManager().registerEvents(new org.yuemi.libs.plugin.gui.GuiListener(this), this);
 
         getServer().getServicesManager().register(
                 YueMiLibsApi.class,

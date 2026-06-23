@@ -59,4 +59,20 @@ public interface Gui {
      * @param player the player to update the GUI for
      */
     void update(@NotNull Player player);
+
+    /**
+     * Gets the configured close policy for this GUI.
+     *
+     * @return the close policy
+     */
+    @NotNull
+    ClosePolicy getClosePolicy();
+
+    /**
+     * Gets the configured callback executed when the GUI is closed.
+     *
+     * @return the close callback, or null if none is configured
+     */
+    @org.jetbrains.annotations.Nullable
+    java.util.function.Consumer<Player> getOnClose();
 }

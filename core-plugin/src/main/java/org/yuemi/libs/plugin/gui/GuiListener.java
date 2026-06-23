@@ -13,6 +13,8 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.Gui;
 import org.yuemi.libs.api.gui.GuiItem;
 import org.yuemi.libs.api.gui.GuiLayer;
@@ -26,7 +28,12 @@ import java.util.UUID;
 
 public final class GuiListener implements Listener {
 
+    private final Plugin plugin;
     private final Set<UUID> anvilSubmitting = Collections.synchronizedSet(new HashSet<>());
+
+    public GuiListener(Plugin plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -126,10 +133,29 @@ public final class GuiListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
+        Player player = (Player) event.getPlayer();
+
+        // 1. Handle Anvil GUI Close
         if (holder instanceof AnvilInputHolder anvilHolder) {
-            Player player = (Player) event.getPlayer();
             if (!anvilSubmitting.remove(player.getUniqueId())) {
-                anvilHolder.getBuilder().getOnClose().accept(player);
+                ClosePolicy policy = anvilHolder.getBuilder().getClosePolicy();
+                if (policy == ClosePolicy.REOPEN) {
+                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> anvilHolder.getBuilder().open(player));
+                } else if (policy == ClosePolicy.CLOSE) {
+                    anvilHolder.getBuilder().getOnClose().accept(player);
+                }
+            }
+            return;
+        }
+
+        // 2. Handle Chest GUI Close
+        if (holder instanceof GuiHolder guiHolder) {
+            Gui gui = guiHolder.getGui();
+            ClosePolicy policy = gui.getClosePolicy();
+            if (policy == ClosePolicy.REOPEN) {
+                org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> gui.open(player));
+            } else if (policy == ClosePolicy.CLOSE && gui.getOnClose() != null) {
+                gui.getOnClose().accept(player);
             }
         }
     }
@@ -153,6 +179,17 @@ public final class GuiListener implements Listener {
             String text = event.getLine(1);
             if (text == null) {
                 text = "";
+            }
+
+            // Enforce reopen close policy if closed/submitted empty or unchanged text
+            if (session.getClosePolicy() == ClosePolicy.REOPEN && (text.isEmpty() || text.equals(session.getInitialText()))) {
+                org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> session.getBuilder().open(player));
+                return;
+            }
+
+            // Enforce nothing close policy if closed/submitted empty or unchanged text
+            if (session.getClosePolicy() == ClosePolicy.NOTHING && (text.isEmpty() || text.equals(session.getInitialText()))) {
+                return;
             }
 
             int limit = session.getMaxLength();

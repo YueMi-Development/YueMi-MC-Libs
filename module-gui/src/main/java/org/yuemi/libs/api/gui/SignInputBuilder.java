@@ -47,6 +47,15 @@ public interface SignInputBuilder {
     SignInputBuilder onSubmit(@NotNull BiConsumer<Player, String> callback);
 
     /**
+     * Sets the close policy for this Sign GUI.
+     *
+     * @param policy the close policy
+     * @return this builder
+     */
+    @NotNull
+    SignInputBuilder closePolicy(@NotNull ClosePolicy policy);
+
+    /**
      * Opens the sign editor for the specified player.
      *
      * @param player the player

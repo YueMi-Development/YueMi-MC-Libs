@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.Gui;
 import org.yuemi.libs.api.gui.GuiItem;
 import org.yuemi.libs.api.gui.GuiLayer;
@@ -22,10 +23,30 @@ public final class GuiImpl implements Gui {
     private final String title;
     private final int rows;
     private final Map<String, GuiLayer> layers = new ConcurrentHashMap<>();
+    private ClosePolicy closePolicy = ClosePolicy.CLOSE;
+    private java.util.function.Consumer<Player> onClose;
 
     public GuiImpl(@NotNull String title, int rows) {
         this.title = title;
         this.rows = Math.max(1, Math.min(6, rows));
+    }
+
+    @Override
+    public @NotNull ClosePolicy getClosePolicy() {
+        return closePolicy;
+    }
+
+    public void setClosePolicy(@NotNull ClosePolicy closePolicy) {
+        this.closePolicy = closePolicy;
+    }
+
+    @Override
+    public java.util.function.Consumer<Player> getOnClose() {
+        return onClose;
+    }
+
+    public void setOnClose(java.util.function.Consumer<Player> onClose) {
+        this.onClose = onClose;
     }
 
     @Override
