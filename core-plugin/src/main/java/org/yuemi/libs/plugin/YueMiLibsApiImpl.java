@@ -9,6 +9,8 @@ import org.yuemi.libs.api.items.ItemsApi;
 import org.yuemi.libs.plugin.items.ItemsApiImpl;
 import org.yuemi.libs.api.gui.GuiApi;
 import org.yuemi.libs.plugin.gui.GuiApiImpl;
+import org.yuemi.libs.api.event.EventApi;
+import org.yuemi.libs.plugin.event.EventApiImpl;
 
 final class YueMiLibsApiImpl implements YueMiLibsApi {
 
@@ -16,9 +18,11 @@ final class YueMiLibsApiImpl implements YueMiLibsApi {
     private final EconomyApiImpl economy = new EconomyApiImpl();
     private final ItemsApiImpl items = new ItemsApiImpl();
     private final GuiApiImpl gui = new GuiApiImpl();
+    private final EventApiImpl events;
 
-    public YueMiLibsApiImpl(@NotNull String version) {
+    public YueMiLibsApiImpl(@NotNull YueMiLibsPlugin plugin, @NotNull String version) {
         this.version = version;
+        this.events = new EventApiImpl(plugin);
     }
 
     @Override
@@ -47,6 +51,15 @@ final class YueMiLibsApiImpl implements YueMiLibsApi {
     @Override
     public @NotNull GuiApi getGui() {
         return gui;
+    }
+
+    @Override
+    public @NotNull EventApi getEvents() {
+        return events;
+    }
+
+    public EventApiImpl getEventsImpl() {
+        return events;
     }
 
     @Override

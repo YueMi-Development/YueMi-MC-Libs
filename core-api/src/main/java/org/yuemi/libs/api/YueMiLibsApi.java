@@ -33,6 +33,14 @@ public interface YueMiLibsApi {
     org.yuemi.libs.api.gui.GuiApi getGui();
 
     /**
+     * Gets the events module API.
+     *
+     * @return the events API manager
+     */
+    @NotNull
+    org.yuemi.libs.api.event.EventApi getEvents();
+
+    /**
      * Gets the version of the YueMi Libs plugin.
      *
      * @return the version string

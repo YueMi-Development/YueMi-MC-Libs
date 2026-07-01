@@ -22,6 +22,7 @@ dependencies {
     api(project(":module-economy"))
     api(project(":module-items"))
     api(project(":module-gui"))
+    api(project(":module-event"))
 }
 
 java {
@@ -44,6 +45,7 @@ tasks.named<Jar>("sourcesJar") {
     from(project(":module-economy").sourceSets.main.get().allSource)
     from(project(":module-items").sourceSets.main.get().allSource)
     from(project(":module-gui").sourceSets.main.get().allSource)
+    from(project(":module-event").sourceSets.main.get().allSource)
 }
 
 tasks.named<Javadoc>("javadoc") {
@@ -51,11 +53,13 @@ tasks.named<Javadoc>("javadoc") {
     source(project(":module-economy").sourceSets.main.get().allSource)
     source(project(":module-items").sourceSets.main.get().allSource)
     source(project(":module-gui").sourceSets.main.get().allSource)
+    source(project(":module-event").sourceSets.main.get().allSource)
     
     classpath += files(
         project(":module-economy").sourceSets.main.get().compileClasspath,
         project(":module-items").sourceSets.main.get().compileClasspath,
-        project(":module-gui").sourceSets.main.get().compileClasspath
+        project(":module-gui").sourceSets.main.get().compileClasspath,
+        project(":module-event").sourceSets.main.get().compileClasspath
     )
 }
 
@@ -74,6 +78,7 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
     from(project(":module-economy").sourceSets.main.get().output)
     from(project(":module-items").sourceSets.main.get().output)
     from(project(":module-gui").sourceSets.main.get().output)
+    from(project(":module-event").sourceSets.main.get().output)
 }
 
 tasks.build {

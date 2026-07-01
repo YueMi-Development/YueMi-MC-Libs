@@ -18,7 +18,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         // Check and migrate version
         new ConfigMigrator(this, CONFIG_VERSION).migrate();
 
-        this.api = new YueMiLibsApiImpl(getDescription().getVersion());
+        this.api = new YueMiLibsApiImpl(this, getDescription().getVersion());
 
         // Read item match mode
         String matchModeStr = getConfig().getString("providers.minecraft.match-mode", "ID").toUpperCase();
@@ -63,6 +63,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         // Register GUI provider and listener
         org.yuemi.libs.api.gui.GuiProvider.register(api.getGui());
         org.yuemi.libs.api.items.ItemsApiProvider.register(api.getItems());
+        org.yuemi.libs.api.event.EventApiProvider.register(api.getEvents());
         getServer().getPluginManager().registerEvents(new org.yuemi.libs.plugin.gui.GuiListener(this), this);
 
         getServer().getServicesManager().register(
@@ -79,7 +80,9 @@ public final class YueMiLibsPlugin extends JavaPlugin {
     public void onDisable() {
         org.yuemi.libs.api.gui.GuiProvider.register(null);
         org.yuemi.libs.api.items.ItemsApiProvider.register(null);
+        org.yuemi.libs.api.event.EventApiProvider.register(null);
         if (api != null) {
+            api.getEventsImpl().disable();
             getServer().getServicesManager().unregister(YueMiLibsApi.class, api);
         }
         getLogger().info("YueMi Libs has been disabled.");
