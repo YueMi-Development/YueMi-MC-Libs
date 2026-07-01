@@ -42,7 +42,7 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.jar {
     archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
-    archiveClassifier.set("")
+    archiveClassifier.set("raw")
 
     manifest {
         attributes(
@@ -54,10 +54,15 @@ tasks.jar {
     }
 }
 
+val deleteRawJar = tasks.register<Delete>("deleteRawJar") {
+    delete(tasks.jar.flatMap { it.archiveFile })
+}
+
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
     archiveClassifier.set("")
+    finalizedBy(deleteRawJar)
 }
 
 tasks.build {
