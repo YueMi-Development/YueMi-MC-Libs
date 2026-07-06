@@ -28,7 +28,30 @@ public final class CraftEngineItemProvider implements ItemProvider {
         if (!isAvailable()) {
             return null;
         }
-        BukkitItemDefinition definition = CraftEngineItems.byId(id);
+        // Safely check if CraftEngine's item manager / registry is initialized via reflection
+        try {
+            Class<?> clazz = Class.forName("net.momirealms.craftengine.bukkit.item.BukkitItemManager");
+            java.lang.reflect.Method instanceMethod = clazz.getMethod("instance");
+            if (instanceMethod.invoke(null) == null) {
+                return null;
+            }
+        } catch (Throwable ignored) {
+            return null; // Return null if CraftEngine is not initialized or class/method is not present
+        }
+
+        // Clean up both possible prefixes
+        String cleanId = id;
+        if (cleanId.startsWith("craftengine:")) {
+            cleanId = cleanId.substring("craftengine:".length());
+        }
+
+        // Try getting by the cleaned ID directly
+        BukkitItemDefinition definition = CraftEngineItems.byId(Key.from(cleanId));
+        if (definition == null && !cleanId.contains(":")) {
+            // Fall back to default: prefix if it has no namespace
+            definition = CraftEngineItems.byId(Key.from("default:" + cleanId));
+        }
+
         if (definition == null) {
             return null;
         }
@@ -47,10 +70,15 @@ public final class CraftEngineItemProvider implements ItemProvider {
         if (itemId == null) {
             return false;
         }
-        if (id.contains(":")) {
-            return itemId.asString().equalsIgnoreCase(id);
+        // If the query ID starts with craftengine:, we check it against the Key's value or default:value since they are equivalent
+        String cleanId = id.startsWith("craftengine:") ? id.substring("craftengine:".length()) : id;
+        String itemNamespace = itemId.namespace();
+        String itemValue = itemId.value();
+
+        if (cleanId.contains(":")) {
+            return itemId.asString().equalsIgnoreCase(cleanId) || (itemNamespace.equalsIgnoreCase("default") && ("default:" + itemValue).equalsIgnoreCase(cleanId));
         } else {
-            return itemId.value().equalsIgnoreCase(id) || itemId.asString().equalsIgnoreCase(id);
+            return itemValue.equalsIgnoreCase(cleanId) || itemId.asString().equalsIgnoreCase(cleanId) || (itemNamespace.equalsIgnoreCase("default") && ("default:" + itemValue).equalsIgnoreCase(cleanId));
         }
     }
 

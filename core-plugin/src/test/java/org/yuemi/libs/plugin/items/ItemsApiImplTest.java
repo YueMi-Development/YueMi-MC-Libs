@@ -14,6 +14,8 @@ public class ItemsApiImplTest {
     private ItemsApiImpl itemsApi;
     private ItemProvider mockMinecraftProvider;
     private ItemProvider mockCustomProvider;
+    private ItemProvider mockNexoProvider;
+    private ItemProvider mockItemsAdderProvider;
     private ItemStack mockItemStack;
 
     @BeforeEach
@@ -21,19 +23,37 @@ public class ItemsApiImplTest {
         itemsApi = new ItemsApiImpl();
         mockMinecraftProvider = mock(ItemProvider.class);
         mockCustomProvider = mock(ItemProvider.class);
+        mockNexoProvider = mock(ItemProvider.class);
+        mockItemsAdderProvider = mock(ItemProvider.class);
         mockItemStack = mock(ItemStack.class);
 
         when(mockMinecraftProvider.isAvailable()).thenReturn(true);
         when(mockCustomProvider.isAvailable()).thenReturn(true);
+        when(mockNexoProvider.isAvailable()).thenReturn(true);
+        when(mockItemsAdderProvider.isAvailable()).thenReturn(true);
 
         itemsApi.registerProvider("minecraft", mockMinecraftProvider);
         itemsApi.registerProvider("custom", mockCustomProvider);
+        itemsApi.registerProvider("nexo", mockNexoProvider);
+        itemsApi.registerProvider("itemsadder", mockItemsAdderProvider);
     }
 
     @Test
     public void testKeyWithExplicitNamespace() {
         itemsApi.getItem("custom:sword", 5);
         verify(mockCustomProvider).getItem(eq("sword"), eq(5));
+    }
+
+    @Test
+    public void testNexoProviderRouting() {
+        itemsApi.getItem("nexo:ruby", 1);
+        verify(mockNexoProvider).getItem(eq("ruby"), eq(1));
+    }
+
+    @Test
+    public void testItemsAdderProviderRouting() {
+        itemsApi.getItem("itemsadder:my_item", 2);
+        verify(mockItemsAdderProvider).getItem(eq("my_item"), eq(2));
     }
 
     @Test
