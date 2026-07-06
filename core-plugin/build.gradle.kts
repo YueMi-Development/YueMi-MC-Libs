@@ -10,6 +10,7 @@ val developerName: String by project
 val pluginVersion: String = project.version.toString()
 val apiVersion: String by project
 val authors: String by project
+val contributors: String by project
 
 dependencies {
     implementation(project(":core-api"))
@@ -28,7 +29,8 @@ tasks.processResources {
         "pluginName" to pluginName,
         "version" to pluginVersion,
         "apiVersion" to apiVersion,
-        "authors" to authors
+        "authors" to authors,
+        "contributors" to contributors
     )
     inputs.properties(props)
     filteringCharset = "UTF-8"

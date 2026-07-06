@@ -3,6 +3,7 @@ version: '${version}'
 main: org.yuemi.libs.plugin.YueMiLibsPlugin
 api-version: '${apiVersion}'
 authors: [${authors}]
+contributors: [${contributors}]
 softdepend:
   - Vault
   - ProtocolLib
