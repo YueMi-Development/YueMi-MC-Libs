@@ -61,6 +61,12 @@ tasks.named<Javadoc>("javadoc") {
         project(":module-gui").sourceSets.main.get().compileClasspath,
         project(":module-event").sourceSets.main.get().compileClasspath
     )
+
+    title = "$pluginName ${project.version} API"
+    (options as StandardJavadocDocletOptions).apply {
+        windowTitle = "$pluginName ${project.version} API"
+        docTitle = "$pluginName ${project.version} API"
+    }
 }
 
 tasks.named<Jar>("javadocJar") {
