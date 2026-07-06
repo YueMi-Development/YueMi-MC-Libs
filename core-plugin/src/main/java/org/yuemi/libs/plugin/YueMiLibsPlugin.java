@@ -7,7 +7,7 @@ import org.yuemi.libs.api.YueMiLibsApi;
 public final class YueMiLibsPlugin extends JavaPlugin {
 
     private YueMiLibsApiImpl api;
-    private final int CONFIG_VERSION = 3;
+    private final int CONFIG_VERSION = 4;
 
     @Override
     public void onEnable() {
@@ -38,6 +38,22 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         if (craftEngineEnabled && getServer().getPluginManager().isPluginEnabled("CraftEngine")) {
             api.getItemsImpl().registerProvider("craftengine", new org.yuemi.libs.plugin.items.CraftEngineItemProvider());
             getLogger().info("Successfully hooked into CraftEngine for items!");
+        }
+
+        // Register Nexo item provider if enabled
+        boolean nexoEnabled = getConfig().getBoolean("hooks.items.nexo.enabled", true);
+        if (nexoEnabled && getServer().getPluginManager().isPluginEnabled("Nexo")) {
+            api.getItemsImpl().registerProvider("nexo", new org.yuemi.libs.plugin.items.NexoItemProvider());
+            getServer().getPluginManager().registerEvents(new org.yuemi.libs.plugin.listeners.NexoItemsLoadedListener(this), this);
+            getLogger().info("Successfully hooked into Nexo for items!");
+        }
+
+        // Register ItemsAdder item provider if enabled
+        boolean itemsAdderEnabled = getConfig().getBoolean("hooks.items.itemsadder.enabled", true);
+        if (itemsAdderEnabled && getServer().getPluginManager().isPluginEnabled("ItemsAdder")) {
+            api.getItemsImpl().registerProvider("itemsadder", new org.yuemi.libs.plugin.items.ItemsAdderItemProvider());
+            getServer().getPluginManager().registerEvents(new org.yuemi.libs.plugin.listeners.ItemsAdderLoadDataListener(this), this);
+            getLogger().info("Successfully hooked into ItemsAdder for items!");
         }
 
         // Check economy configuration

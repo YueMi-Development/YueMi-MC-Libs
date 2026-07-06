@@ -21,6 +21,7 @@ subprojects {
         maven("https://repo.momirealms.net/releases/")
         maven("https://jitpack.io")
         maven("https://repo.dmulloy2.net/repository/public/")
+        maven("https://repo.nexomc.com/releases/")
     }
 
     dependencies {

@@ -3,4 +3,9 @@ version: '${version}'
 main: org.yuemi.libs.plugin.YueMiLibsPlugin
 api-version: '${apiVersion}'
 authors: [${authors}]
-softdepend: [Vault, ProtocolLib, CraftEngine]
+softdepend:
+  - Vault
+  - ProtocolLib
+  - CraftEngine
+  - Nexo
+  - ItemsAdder

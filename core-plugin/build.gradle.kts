@@ -19,6 +19,8 @@ dependencies {
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
     compileOnly("net.momirealms:craft-engine-bukkit:26.6.2")
     compileOnly("net.momirealms:craft-engine-core:26.6.2")
+    compileOnly("com.nexomc:nexo:1.21.0")
+    compileOnly("com.github.LoneDev6:api-itemsadder:3.6.3-beta-14")
 }
 
 tasks.processResources {

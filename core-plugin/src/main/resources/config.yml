@@ -1,7 +1,7 @@
 # YueMi Libs Configuration
 
 # Do not change this version!
-config-version: 3
+config-version: 4
 
 # Configure third-party hooks and integration
 hooks:
@@ -12,6 +12,12 @@ hooks:
   items:
     # Whether to hook into CraftEngine to support its custom items
     craftengine:
+      enabled: true
+    # Whether to hook into Nexo to support its custom items
+    nexo:
+      enabled: true
+    # Whether to hook into ItemsAdder to support its custom items
+    itemsadder:
       enabled: true
 
 # Configuration for item providers

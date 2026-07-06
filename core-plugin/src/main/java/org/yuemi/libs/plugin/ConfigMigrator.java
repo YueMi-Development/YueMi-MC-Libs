@@ -57,6 +57,15 @@ public final class ConfigMigrator {
                     config.set("hooks.items.craftengine.enabled", true);
                 }
                 break;
+            case 3:
+                // Migration logic from version 3 to 4
+                if (!config.contains("hooks.items.nexo.enabled")) {
+                    config.set("hooks.items.nexo.enabled", true);
+                }
+                if (!config.contains("hooks.items.itemsadder.enabled")) {
+                    config.set("hooks.items.itemsadder.enabled", true);
+                }
+                break;
             default:
                 break;
         }
