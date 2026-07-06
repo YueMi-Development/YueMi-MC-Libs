@@ -22,6 +22,8 @@ subprojects {
         maven("https://jitpack.io")
         maven("https://repo.dmulloy2.net/repository/public/")
         maven("https://repo.nexomc.com/releases/")
+        maven("https://repo.triumphteam.dev/snapshots/")
+        maven("https://repo.devs.beer/repository/maven-public/")
     }
 
     dependencies {
