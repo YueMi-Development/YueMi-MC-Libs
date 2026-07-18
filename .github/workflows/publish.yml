@@ -20,6 +20,11 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Grant gradlew permission
         run: chmod +x gradlew
 
@@ -33,8 +38,11 @@ jobs:
     strategy:
       matrix:
         module:
+          - core-api
           - core-plugin
           - module-economy
+          - module-event
+          - module-gui
           - module-items
       fail-fast: false
 
@@ -49,6 +57,11 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: gradle
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
       - name: Grant gradlew permission
         run: chmod +x gradlew
@@ -119,6 +132,11 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Grant gradlew permission
         run: chmod +x gradlew
 
@@ -182,6 +200,11 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Grant gradlew permission
         run: chmod +x gradlew
 
@@ -235,6 +258,11 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: gradle
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
       - name: Grant gradlew permission
         run: chmod +x gradlew
