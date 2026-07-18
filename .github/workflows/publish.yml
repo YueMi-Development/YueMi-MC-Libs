@@ -6,7 +6,102 @@ on:
       - "v*"
 
 jobs:
-  publish:
+  # ── Quick compile check ────────────────────────────────────
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Grant gradlew permission
+        run: chmod +x gradlew
+
+      - name: Compile all modules
+        run: ./gradlew clean compileJava compileTestJava --no-daemon
+
+  # ── Run tests per module (parallel) ────────────────────────
+  test:
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - core-plugin
+          - module-economy
+          - module-items
+      fail-fast: false
+
+    name: Test ${{ matrix.module }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Grant gradlew permission
+        run: chmod +x gradlew
+
+      - name: Run tests for ${{ matrix.module }}
+        id: test
+        run: ./gradlew :${{ matrix.module }}:test --no-daemon
+
+      # Primary: Display test results in PR/workflow checks UI
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results – ${{ matrix.module }}
+          path: ${{ matrix.module }}/build/test-results/test/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      # Secondary: Generate markdown summary in workflow run
+      - name: Generate Test Report Summary
+        if: always()
+        run: |
+          echo "## ${{ matrix.module }} Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+          REPORT_DIR="${{ matrix.module }}/build/reports/tests/test"
+          if [ -d "$REPORT_DIR" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "[View Detailed HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Artifact: \`test-report-${{ matrix.module }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # Upload detailed HTML report as artifact
+      - name: Upload test report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-${{ matrix.module }}
+          path: ${{ matrix.module }}/build/reports/tests/test/
+          retention-days: 30
+
+      # Fail the job if the test step itself failed
+      - name: Check test results
+        if: failure() && steps.test.outcome == 'failure'
+        run: |
+          echo "Tests failed for ${{ matrix.module }}! Check the Test Results tab above."
+          exit 1
+
+  # ── Sync version & contributors (pushes commits) ───────────
+  prepare:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -16,7 +111,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
@@ -64,20 +158,98 @@ jobs:
             echo "Versions match. No update needed."
           fi
 
-      - name: Run Tests
-        run: ./gradlew test --no-daemon
+  # ── Publish API to Maven & build plugin JAR ────────────────
+  publish:
+    needs: prepare
+    runs-on: ubuntu-latest
 
-      - name: Publish to Yuemi Maven
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # prepare job may have pushed commits; sync to the latest
+      - name: Sync to latest branch state
+        run: |
+          git fetch origin ${{ github.ref_name }}
+          git reset --hard origin/${{ github.ref_name }}
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Grant gradlew permission
+        run: chmod +x gradlew
+
+      - name: Publish API to Yuemi Maven
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
         run: ./gradlew :core-api:publish --no-daemon
 
-      - name: Build Shaded JAR
-        run: ./gradlew :core-plugin:build --no-daemon
+      - name: Build shaded plugin JAR
+        # Tests already ran in the test matrix; skip them here for speed
+        run: ./gradlew :core-plugin:shadowJar -x test --no-daemon
 
-      - name: Generate Javadocs
-        run: ./gradlew :core-api:javadoc --no-daemon
+      - name: Upload plugin JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-jar
+          path: core-plugin/build/libs/*.jar
+          retention-days: 30
+
+      - name: Upload javadocs
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadocs
+          path: core-api/build/docs/javadoc/
+          retention-days: 30
+
+  # ── Release to Modrinth & GitHub ───────────────────────────
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync to latest branch state
+        run: |
+          git fetch origin ${{ github.ref_name }}
+          git reset --hard origin/${{ github.ref_name }}
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Grant gradlew permission
+        run: chmod +x gradlew
+
+      - name: Download plugin JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-jar
+          path: core-plugin/build/libs
+
+      - name: Download javadocs
+        uses: actions/download-artifact@v4
+        with:
+          name: javadocs
+          path: core-api/build/docs/javadoc
 
       - name: Deploy Javadocs to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -91,14 +263,14 @@ jobs:
           PROJECT_ID=$(jq -r '.projectId' modrinth.json)
           LOADERS=$(jq -c '.loaders' modrinth.json)
           GAME_VERSIONS=$(jq -c '.gameVersions' modrinth.json)
-          
+
           # Clean version from the branch (which starts with v)
           BRANCH_NAME="${{ github.ref_name }}"
           VERSION_NUMBER=$(echo "$BRANCH_NAME" | sed 's/^v//')
-          
+
           # Find the built JAR file
           JAR_PATH=$(find core-plugin/build/libs -name "*.jar" ! -name "*-plain.jar" | head -n 1)
-          
+
           echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
           echo "loaders=$LOADERS" >> $GITHUB_OUTPUT
           echo "game_versions=$GAME_VERSIONS" >> $GITHUB_OUTPUT
@@ -117,7 +289,7 @@ jobs:
             echo "Generating changelog between $PREV_TAG and HEAD."
             CHANGELOG=$(git log --pretty=format:"* %s (%h)" $PREV_TAG..HEAD)
           fi
-          
+
           # Write to GITHUB_OUTPUT
           {
             echo "changelog<<EOF"
