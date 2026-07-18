@@ -20,7 +20,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Set up Node.js 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -58,7 +58,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Set up Node.js 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -132,7 +132,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Set up Node.js 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -200,7 +200,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Set up Node.js 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -259,7 +259,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Set up Node.js 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -284,6 +284,9 @@ jobs:
         with:
           folder: core-api/build/docs/javadoc
           branch: gh-pages
+
+      - name: Convert modrinth.json5 to JSON
+        run: npx -y json5 modrinth.json5 -o modrinth.json
 
       - name: Read Modrinth Configuration
         id: modrinth_config
