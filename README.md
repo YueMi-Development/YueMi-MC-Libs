@@ -2,6 +2,11 @@
 
 A modern, high-performance, and extensible Minecraft server library plugin built for **PaperMC** (1.21+ / Java 21). It provides developer-friendly, unified abstraction layers for common plugin features like economies and items.
 
+<a href="https://modrinth.com/plugin/yuemi-libs" target="_blank" rel="noopener noreferrer"><img alt="modrinth" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/modrinth_vector.svg"></a>
+
+![](https://img.shields.io/bstats/players/32719?color=green&label=Players)
+![](https://img.shields.io/bstats/servers/32719?color=green&label=Servers)
+
 ---
 
 ## Features
