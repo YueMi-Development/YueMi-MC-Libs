@@ -4,6 +4,8 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yuemi.libs.api.YueMiLibsApi;
 
+import org.yuemi.libs.plugin.bstats.BStatsService;
+
 public final class YueMiLibsPlugin extends JavaPlugin {
 
     private YueMiLibsApiImpl api;
@@ -11,6 +13,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        BStatsService.initialize(this);
         // Load config
         saveDefaultConfig();
         reloadConfig();
