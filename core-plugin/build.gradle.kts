@@ -15,6 +15,7 @@ val contributors: String by project
 dependencies {
     implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation(project(":core-api"))
+    implementation("org.yuemi:mc-config-libs:1.0.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
@@ -73,6 +74,7 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
     configurations = listOf(project.configurations.runtimeClasspath.get())
 
     relocate("org.bstats", "${project.group}.libs.plugin.bstats")
+    relocate("org.yuemi.config", "${project.group}.libs.config")
 
     finalizedBy(deleteRawJar)
 }

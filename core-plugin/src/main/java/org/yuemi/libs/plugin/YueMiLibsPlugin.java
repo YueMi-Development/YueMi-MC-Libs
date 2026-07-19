@@ -9,17 +9,13 @@ import org.yuemi.libs.plugin.bstats.BStatsService;
 public final class YueMiLibsPlugin extends JavaPlugin {
 
     private YueMiLibsApiImpl api;
-    private final int CONFIG_VERSION = 4;
 
     @Override
     public void onEnable() {
         BStatsService.initialize(this);
-        // Load config
-        saveDefaultConfig();
-        reloadConfig();
-
         // Check and migrate version
-        new ConfigMigrator(this, CONFIG_VERSION).migrate();
+        new org.yuemi.config.api.ConfigManager(this, "org.yuemi.libs.plugin.config.migrations").loadAndMigrate(this);
+        reloadConfig();
 
         this.api = new YueMiLibsApiImpl(this, getDescription().getVersion());
 
