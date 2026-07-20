@@ -41,7 +41,14 @@ public final class GuiListener implements Listener {
         InventoryHolder holder = topInventory.getHolder();
 
         // 1. Handle Anvil GUI Text Input Click
-        if (holder instanceof AnvilInputHolder anvilHolder) {
+        Player player = (Player) event.getWhoClicked();
+        AnvilInputBuilderImpl anvilHolder = AnvilInputBuilderImpl.ACTIVE_SESSIONS.get(player.getUniqueId());
+        if (anvilHolder == null && holder instanceof AnvilInputHolder) {
+            anvilHolder = (AnvilInputBuilderImpl) ((AnvilInputHolder) holder).getBuilder();
+        }
+
+        // 1. Handle Anvil GUI Text Input Click
+        if (anvilHolder != null) {
             int slot = event.getRawSlot();
 
             // Lock slot 0 and slot 1 to prevent modification
@@ -62,19 +69,18 @@ public final class GuiListener implements Listener {
 
             // Clicked the result slot
             if (slot == 2) {
-                Player player = (Player) event.getWhoClicked();
                 ItemStack resultItem = topInventory.getItem(2);
                 String resultText = "";
                 if (resultItem != null && resultItem.hasItemMeta() && resultItem.getItemMeta().hasDisplayName()) {
                     resultText = resultItem.getItemMeta().getDisplayName();
                 } else {
-                    resultText = anvilHolder.getBuilder().getInitialText();
+                    resultText = anvilHolder.getInitialText();
                 }
                 
                 resultText = org.bukkit.ChatColor.stripColor(resultText);
 
                 // Enforce max length
-                int limit = anvilHolder.getBuilder().getMaxLength();
+                int limit = anvilHolder.getMaxLength();
                 if (resultText.length() > limit) {
                     resultText = resultText.substring(0, limit);
                 }
@@ -82,7 +88,7 @@ public final class GuiListener implements Listener {
                 // Close inventory and execute callback
                 anvilSubmitting.add(player.getUniqueId());
                 player.closeInventory();
-                anvilHolder.getBuilder().getOnSubmit().accept(player, resultText);
+                anvilHolder.getOnSubmit().accept(player, resultText);
             }
             return;
         }
@@ -104,7 +110,6 @@ public final class GuiListener implements Listener {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         Gui gui = guiHolder.getGui();
 
         Collection<GuiLayer> layers = gui.getLayers();
@@ -137,14 +142,20 @@ public final class GuiListener implements Listener {
         InventoryHolder holder = event.getInventory().getHolder();
         Player player = (Player) event.getPlayer();
 
+        AnvilInputBuilderImpl anvilHolder = AnvilInputBuilderImpl.ACTIVE_SESSIONS.remove(player.getUniqueId());
+        if (anvilHolder == null && holder instanceof AnvilInputHolder) {
+            anvilHolder = (AnvilInputBuilderImpl) ((AnvilInputHolder) holder).getBuilder();
+        }
+
         // 1. Handle Anvil GUI Close
-        if (holder instanceof AnvilInputHolder anvilHolder) {
+        if (anvilHolder != null) {
+            final AnvilInputBuilderImpl finalHolder = anvilHolder;
             if (!anvilSubmitting.remove(player.getUniqueId())) {
-                ClosePolicy policy = anvilHolder.getBuilder().getClosePolicy();
+                ClosePolicy policy = finalHolder.getClosePolicy();
                 if (policy == ClosePolicy.REOPEN) {
-                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> anvilHolder.getBuilder().open(player));
+                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> finalHolder.open(player));
                 } else if (policy == ClosePolicy.CLOSE) {
-                    anvilHolder.getBuilder().getOnClose().accept(player);
+                    finalHolder.getOnClose().accept(player);
                 }
             }
             return;
@@ -161,18 +172,30 @@ public final class GuiListener implements Listener {
             }
         }
     }
-
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
         InventoryHolder holder = event.getView().getTopInventory().getHolder();
-        if (holder instanceof GuiHolder || holder instanceof AnvilInputHolder) {
+        Player player = (Player) event.getWhoClicked();
+        if (AnvilInputBuilderImpl.ACTIVE_SESSIONS.containsKey(player.getUniqueId()) || holder instanceof AnvilInputHolder || holder instanceof GuiHolder) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onPrepareAnvil(org.bukkit.event.inventory.PrepareAnvilEvent event) {
+        boolean isCustomAnvil = false;
         if (event.getInventory().getHolder() instanceof AnvilInputHolder) {
+            isCustomAnvil = true;
+        } else {
+            for (org.bukkit.entity.HumanEntity viewer : event.getViewers()) {
+                if (AnvilInputBuilderImpl.ACTIVE_SESSIONS.containsKey(viewer.getUniqueId())) {
+                    isCustomAnvil = true;
+                    break;
+                }
+            }
+        }
+
+        if (isCustomAnvil) {
             org.bukkit.inventory.AnvilInventory anvil = event.getInventory();
             anvil.setRepairCost(0);
             

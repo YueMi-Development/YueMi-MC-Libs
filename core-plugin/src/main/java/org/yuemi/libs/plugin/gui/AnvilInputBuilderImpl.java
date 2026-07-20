@@ -6,13 +6,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.yuemi.libs.api.gui.AnvilInputBuilder;
 import org.yuemi.libs.api.gui.ClosePolicy;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
+
+    public static final Map<UUID, AnvilInputBuilderImpl> ACTIVE_SESSIONS = new ConcurrentHashMap<>();
 
     private String title = "Input";
     private String initialText = "";
@@ -90,18 +96,38 @@ public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
 
     @Override
     public void open(@NotNull Player player) {
-        AnvilInputHolder holder = new AnvilInputHolder(this);
-        Inventory inventory = Bukkit.createInventory(holder, org.bukkit.event.inventory.InventoryType.ANVIL, title);
-        holder.setInventory(inventory);
+        ACTIVE_SESSIONS.put(player.getUniqueId(), this);
+        InventoryView view = null;
+        try {
+            view = player.openAnvil(player.getLocation(), true);
+        } catch (Throwable ignored) {}
 
-        ItemStack item = leftItem != null ? leftItem.clone() : new ItemStack(Material.PAPER);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(initialText);
-            item.setItemMeta(meta);
+        if (view != null) {
+            try {
+                view.setTitle(title);
+            } catch (Throwable ignored) {}
+
+            Inventory inventory = view.getTopInventory();
+            ItemStack item = leftItem != null ? leftItem.clone() : new ItemStack(Material.PAPER);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(initialText);
+                item.setItemMeta(meta);
+            }
+            inventory.setItem(0, item);
+        } else {
+            AnvilInputHolder holder = new AnvilInputHolder(this);
+            Inventory inventory = Bukkit.createInventory(holder, org.bukkit.event.inventory.InventoryType.ANVIL, title);
+            holder.setInventory(inventory);
+
+            ItemStack item = leftItem != null ? leftItem.clone() : new ItemStack(Material.PAPER);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(initialText);
+                item.setItemMeta(meta);
+            }
+            inventory.setItem(0, item);
+            player.openInventory(inventory);
         }
-        inventory.setItem(0, item);
-
-        player.openInventory(inventory);
     }
 }
