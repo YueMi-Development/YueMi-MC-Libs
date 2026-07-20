@@ -25,12 +25,14 @@ subprojects {
         maven("https://repo.nexomc.com/releases/")
         maven("https://repo.triumphteam.dev/snapshots/")
         maven("https://repo.devs.beer/repository/maven-public/")
+        maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
 
     dependencies {
         val paperApiVersion = property("paperApiVersion") as String
         add("compileOnly", "io.papermc.paper:paper-api:$paperApiVersion")
         add("testImplementation", "io.papermc.paper:paper-api:$paperApiVersion")
+        add("compileOnly", "me.clip:placeholderapi:2.11.6")
 
         // Testing frameworks
         add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.10.2")
