@@ -87,8 +87,22 @@ public final class GuiListener implements Listener {
 
                 // Close inventory and execute callback
                 anvilSubmitting.add(player.getUniqueId());
-                player.closeInventory();
-                anvilHolder.getOnSubmit().accept(player, resultText);
+                topInventory.clear();
+                player.setItemOnCursor(null);
+                
+                final String finalResultText = resultText;
+                final AnvilInputBuilderImpl finalAnvilHolder = anvilHolder;
+                
+                boolean isVirtual = holder instanceof AnvilInputHolder;
+                if (isVirtual) {
+                    player.closeInventory();
+                    finalAnvilHolder.getOnSubmit().accept(player, finalResultText);
+                } else {
+                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+                        player.closeInventory();
+                        finalAnvilHolder.getOnSubmit().accept(player, finalResultText);
+                    });
+                }
             }
             return;
         }
