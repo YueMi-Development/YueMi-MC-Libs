@@ -7,3 +7,5 @@ org.yuemi.libs.api.event.bukkit.entity
 org.yuemi.libs.api.event.bukkit.player
 org.yuemi.libs.api.gui
 org.yuemi.libs.api.items
+org.yuemi.libs.api.placeholder
+org.yuemi.libs.api.util
