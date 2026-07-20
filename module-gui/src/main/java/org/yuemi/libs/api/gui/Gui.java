@@ -77,6 +77,13 @@ public interface Gui {
     ClosePolicy getClosePolicy();
 
     /**
+     * Sets the close policy for this GUI.
+     *
+     * @param closePolicy the close policy
+     */
+    void setClosePolicy(@NotNull ClosePolicy closePolicy);
+
+    /**
      * Gets the configured callback executed when the GUI is closed.
      *
      * @return the close callback, or null if none is configured

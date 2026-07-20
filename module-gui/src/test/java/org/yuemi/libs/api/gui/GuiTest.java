@@ -38,8 +38,10 @@ public class GuiTest {
         Gui gui = Mockito.mock(Gui.class);
 
         Mockito.when(gui.getClosePolicy()).thenReturn(ClosePolicy.CLOSE);
+        gui.setClosePolicy(ClosePolicy.CLOSE);
 
         assertEquals(ClosePolicy.CLOSE, gui.getClosePolicy());
+        Mockito.verify(gui).setClosePolicy(ClosePolicy.CLOSE);
     }
 
     @Test
