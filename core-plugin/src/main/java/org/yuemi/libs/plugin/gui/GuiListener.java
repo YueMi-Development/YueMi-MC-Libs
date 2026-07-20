@@ -169,6 +169,26 @@ public final class GuiListener implements Listener {
     }
 
     @EventHandler
+    public void onPrepareAnvil(org.bukkit.event.inventory.PrepareAnvilEvent event) {
+        if (event.getInventory().getHolder() instanceof AnvilInputHolder) {
+            org.bukkit.inventory.AnvilInventory anvil = event.getInventory();
+            anvil.setRepairCost(0);
+            
+            ItemStack leftItem = anvil.getItem(0);
+            if (leftItem != null) {
+                String renameText = anvil.getRenameText();
+                ItemStack result = leftItem.clone();
+                org.bukkit.inventory.meta.ItemMeta meta = result.getItemMeta();
+                if (meta != null) {
+                    meta.setDisplayName(renameText != null ? renameText : "");
+                    result.setItemMeta(meta);
+                }
+                event.setResult(result);
+            }
+        }
+    }
+
+    @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
         SignInputBuilderImpl.SignSession session = SignInputBuilderImpl.ACTIVE_SESSIONS.remove(player);
