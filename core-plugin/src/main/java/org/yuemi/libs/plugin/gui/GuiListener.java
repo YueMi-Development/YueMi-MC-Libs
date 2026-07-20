@@ -70,6 +70,8 @@ public final class GuiListener implements Listener {
                 } else {
                     resultText = anvilHolder.getBuilder().getInitialText();
                 }
+                
+                resultText = org.bukkit.ChatColor.stripColor(resultText);
 
                 // Enforce max length
                 int limit = anvilHolder.getBuilder().getMaxLength();
