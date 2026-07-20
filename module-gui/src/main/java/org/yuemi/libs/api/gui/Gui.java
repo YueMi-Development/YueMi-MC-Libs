@@ -61,6 +61,14 @@ public interface Gui {
     void update(@NotNull Player player);
 
     /**
+     * Updates the title of the GUI for the player if they have it open.
+     *
+     * @param player the player to update the title for
+     * @param title the new title
+     */
+    void updateTitle(@NotNull Player player, @NotNull String title);
+
+    /**
      * Gets the configured close policy for this GUI.
      *
      * @return the close policy

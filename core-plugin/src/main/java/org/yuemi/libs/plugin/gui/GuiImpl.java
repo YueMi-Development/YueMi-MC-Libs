@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class GuiImpl implements Gui {
 
-    private final String title;
+    private String title;
     private final int rows;
     private final Map<String, GuiLayer> layers = new ConcurrentHashMap<>();
     private ClosePolicy closePolicy = ClosePolicy.CLOSE;
@@ -98,6 +98,17 @@ public final class GuiImpl implements Gui {
         if (topInventory.getHolder() instanceof GuiHolder holder) {
             if (holder.getGui() == this) {
                 populateInventory(player, topInventory);
+            }
+        }
+    }
+
+    @Override
+    public void updateTitle(@NotNull Player player, @NotNull String title) {
+        Inventory topInventory = player.getOpenInventory().getTopInventory();
+        if (topInventory.getHolder() instanceof GuiHolder holder) {
+            if (holder.getGui() == this) {
+                this.title = title;
+                player.getOpenInventory().setTitle(title);
             }
         }
     }

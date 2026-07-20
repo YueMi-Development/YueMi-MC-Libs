@@ -41,4 +41,13 @@ public class GuiTest {
 
         assertEquals(ClosePolicy.CLOSE, gui.getClosePolicy());
     }
+
+    @Test
+    public void testUpdateTitle() {
+        Gui gui = Mockito.mock(Gui.class);
+        org.bukkit.entity.Player player = Mockito.mock(org.bukkit.entity.Player.class);
+
+        gui.updateTitle(player, "New Title");
+        Mockito.verify(gui).updateTitle(player, "New Title");
+    }
 }
