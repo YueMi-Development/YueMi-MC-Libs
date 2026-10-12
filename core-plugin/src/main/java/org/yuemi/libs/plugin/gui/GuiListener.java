@@ -16,8 +16,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.Gui;
+import org.yuemi.libs.api.gui.GuiClickContext;
 import org.yuemi.libs.api.gui.GuiItem;
 import org.yuemi.libs.api.gui.GuiLayer;
+import org.yuemi.libs.api.gui.SlotBehavior;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,10 +114,18 @@ public final class GuiListener implements Listener {
             return;
         }
 
-        event.setCancelled(true);
-
         Inventory clickedInventory = event.getClickedInventory();
-        if (clickedInventory == null || !(clickedInventory.getHolder() instanceof GuiHolder)) {
+
+        // If clicked in the player's bottom inventory, allow normal inventory behavior
+        // unless it's a shift-click (item would be moved to top inventory)
+        if (clickedInventory != null && !(clickedInventory.getHolder() instanceof GuiHolder)) {
+            if (event.isShiftClick()) {
+                handleShiftClickIntoGui(event, guiHolder);
+            }
+            return;  // Don't cancel - let inventory handle it
+        }
+
+        if (clickedInventory == null) {
             return;
         }
 
@@ -126,29 +136,78 @@ public final class GuiListener implements Listener {
 
         Gui gui = guiHolder.getGui();
 
+        GuiItem clickedItem = findGuiItem(gui, slot, player);
+
+        if (clickedItem == null) {
+            // No GUI item here - allow normal chest interaction
+            return;
+        }
+
+        // Check per-slot behavior
+        SlotBehavior behavior = clickedItem.behavior();
+        org.yuemi.libs.api.gui.GuiClickContext.Action action = determineAction(event);
+
+        if (!isActionAllowed(behavior, action, event)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        // For PICKUP and SWAP actions that are allowed, let the inventory handle
+        // the item movement but still notify the GUI item (so it can react).
+        boolean allowNativeMovement = switch (action) {
+            case PICKUP, SWAP, DROP_CURSOR -> behavior.allowPickup();
+            default -> false;
+        };
+
+        if (!allowNativeMovement) {
+            // Cancel and dispatch - GUI controls the item
+            event.setCancelled(true);
+        }
+
+        GuiClickContextImpl context = new GuiClickContextImpl(
+                player,
+                slot,
+                event.getClick(),
+                event,
+                gui,
+                action,
+                determineInteractedItem(event)
+        );
+        clickedItem.onClick(context);
+    }
+
+    /**
+     * Find the topmost GuiItem for a given slot.
+     */
+    private GuiItem findGuiItem(Gui gui, int slot, Player player) {
         Collection<GuiLayer> layers = gui.getLayers();
         List<GuiLayer> descendingLayers = new ArrayList<>(layers);
         descendingLayers.sort((a, b) -> Integer.compare(b.getPriority(), a.getPriority()));
 
-        GuiItem clickedItem = null;
         for (GuiLayer layer : descendingLayers) {
             GuiItem item = layer.getItem(slot);
             if (item != null && item.shouldRender(player)) {
-                clickedItem = item;
-                break;
+                return item;
             }
         }
+        return null;
+    }
 
-        if (clickedItem != null) {
-            GuiClickContextImpl context = new GuiClickContextImpl(
-                    player,
-                    slot,
-                    event.getClick(),
-                    event,
-                    gui
-            );
-            clickedItem.onClick(context);
+    /**
+     * Check if the given action is allowed by the slot's behavior config.
+     */
+    private boolean isActionAllowed(SlotBehavior behavior,
+                                    org.yuemi.libs.api.gui.GuiClickContext.Action action,
+                                    InventoryClickEvent event) {
+        if (event.isShiftClick()) {
+            return behavior.allowShift();
         }
+        return switch (action) {
+            case PICKUP, SWAP, DROP_CURSOR -> behavior.allowPickup();
+            case PLACE, SHIFT_CLICK -> behavior.allowPlace();
+            case DRAG_PLACE -> behavior.allowDrag();
+            case LEFT_CLICK, RIGHT_CLICK -> true; // Always allow clicks
+        };
     }
 
     @EventHandler
@@ -190,9 +249,159 @@ public final class GuiListener implements Listener {
     public void onInventoryDrag(InventoryDragEvent event) {
         InventoryHolder holder = event.getView().getTopInventory().getHolder();
         Player player = (Player) event.getWhoClicked();
-        if (AnvilInputBuilderImpl.ACTIVE_SESSIONS.containsKey(player.getUniqueId()) || holder instanceof AnvilInputHolder || holder instanceof GuiHolder) {
+        if (AnvilInputBuilderImpl.ACTIVE_SESSIONS.containsKey(player.getUniqueId()) || holder instanceof AnvilInputHolder) {
             event.setCancelled(true);
+            return;
         }
+
+        // Not our GUI - ignore
+        if (!(holder instanceof GuiHolder guiHolder)) {
+            return;
+        }
+
+        int topSize = event.getView().getTopInventory().getSize();
+
+        // Check if any of the affected slots are in the top (GUI) inventory
+        boolean affectsTopInventory = false;
+        for (int slot : event.getRawSlots()) {
+            if (slot < topSize) {
+                affectsTopInventory = true;
+                break;
+            }
+        }
+
+        if (!affectsTopInventory) {
+            // Drag is entirely in bottom inventory - allow
+            return;
+        }
+
+        // Check per-slot behaviors to see if any slot disallows drag
+        Gui gui = guiHolder.getGui();
+        for (int slot : event.getRawSlots()) {
+            if (slot >= topSize) continue;
+            GuiItem item = findGuiItem(gui, slot, player);
+            if (item != null && !item.behavior().allowDrag()) {
+                // Some slot disallows drag - cancel entire drag
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        // Cancel the drag and notify GUI for each affected top-inventory slot
+        event.setCancelled(true);
+
+        for (int slot : event.getRawSlots()) {
+            if (slot >= topSize) continue;
+
+            GuiItem clickedItem = findGuiItem(gui, slot, player);
+
+            if (clickedItem != null) {
+                // Build a synthetic click event context for the drag.
+                org.bukkit.event.inventory.InventoryClickEvent syntheticClick = new org.bukkit.event.inventory.InventoryClickEvent(
+                        event.getView(),
+                        org.bukkit.event.inventory.InventoryType.SlotType.CONTAINER,
+                        slot,
+                        org.bukkit.event.inventory.ClickType.LEFT,
+                        org.bukkit.event.inventory.InventoryAction.PLACE_ALL
+                );
+                ItemStack cursor = event.getOldCursor();
+                GuiClickContextImpl context = new GuiClickContextImpl(
+                        player,
+                        slot,
+                        org.bukkit.event.inventory.ClickType.LEFT,
+                        syntheticClick,
+                        gui,
+                        GuiClickContextImpl.Action.DRAG_PLACE,
+                        cursor != null ? cursor.clone() : null
+                );
+                clickedItem.onClick(context);
+            }
+        }
+    }
+
+    private void handleShiftClickIntoGui(InventoryClickEvent event, GuiHolder guiHolder) {
+        Player player = (Player) event.getWhoClicked();
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType().isAir()) return;
+
+        // Cancel the shift-click to take control
+        event.setCancelled(true);
+
+        Gui gui = guiHolder.getGui();
+        int topSize = event.getView().getTopInventory().getSize();
+        Collection<GuiLayer> layers = gui.getLayers();
+        List<GuiLayer> descendingLayers = new ArrayList<>(layers);
+        descendingLayers.sort((a, b) -> Integer.compare(b.getPriority(), a.getPriority()));
+
+        // Find first slot in top inventory that has a GuiItem
+        for (int slot = 0; slot < topSize; slot++) {
+            GuiItem clickedItem = null;
+            for (GuiLayer layer : descendingLayers) {
+                GuiItem item = layer.getItem(slot);
+                if (item != null && item.shouldRender(player)) {
+                    clickedItem = item;
+                    break;
+                }
+            }
+            if (clickedItem != null) {
+                GuiClickContextImpl context = new GuiClickContextImpl(
+                        player,
+                        slot,
+                        org.bukkit.event.inventory.ClickType.SHIFT_LEFT,
+                        event,
+                        gui,
+                        GuiClickContextImpl.Action.SHIFT_CLICK,
+                        clicked.clone()
+                );
+                clickedItem.onClick(context);
+                break;  // Only one slot
+            }
+        }
+    }
+
+    private GuiClickContextImpl.Action determineAction(InventoryClickEvent event) {
+        return determineAction(event, event.getSlot());
+    }
+
+    private GuiClickContextImpl.Action determineAction(InventoryClickEvent event, int slot) {
+        ItemStack cursor = event.getCursor();
+        ItemStack current = event.getCurrentItem();
+        org.bukkit.event.inventory.InventoryAction action = event.getAction();
+
+        if (event.isShiftClick()) {
+            return GuiClickContextImpl.Action.SHIFT_CLICK;
+        }
+        if (action.name().startsWith("HOTBAR_SWAP") || action == org.bukkit.event.inventory.InventoryAction.HOTBAR_SWAP) {
+            return GuiClickContextImpl.Action.SWAP;
+        }
+        if (cursor != null && !cursor.getType().isAir() && (current == null || current.getType().isAir())) {
+            // Player is placing cursor item into empty slot
+            return GuiClickContextImpl.Action.PLACE;
+        }
+        if (cursor != null && !cursor.getType().isAir() && current != null && !current.getType().isAir()) {
+            // Player is swapping with cursor - can be PICKUP or SWAP
+            return GuiClickContextImpl.Action.SWAP;
+        }
+        if ((cursor == null || cursor.getType().isAir()) && current != null && !current.getType().isAir()) {
+            return GuiClickContextImpl.Action.PICKUP;
+        }
+        return GuiClickContextImpl.Action.LEFT_CLICK;
+    }
+
+    private ItemStack determineInteractedItem(InventoryClickEvent event) {
+        return determineInteractedItem(event, event.getSlot());
+    }
+
+    private ItemStack determineInteractedItem(InventoryClickEvent event, int slot) {
+        ItemStack cursor = event.getCursor();
+        ItemStack current = event.getCurrentItem();
+        if (cursor != null && !cursor.getType().isAir()) {
+            return cursor.clone();
+        }
+        if (current != null && !current.getType().isAir()) {
+            return current.clone();
+        }
+        return null;
     }
 
     @EventHandler

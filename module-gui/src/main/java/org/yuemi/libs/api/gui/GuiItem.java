@@ -37,6 +37,19 @@ public interface GuiItem {
     void onClick(@NotNull GuiClickContext context);
 
     /**
+     * Returns the interaction behavior for this slot.
+     * Determines which player actions (pickup, place, shift, drag) are allowed.
+     *
+     * Default: {@link SlotBehavior#ALL} - all actions allowed.
+     *
+     * @return the slot behavior
+     */
+    @NotNull
+    default SlotBehavior behavior() {
+        return SlotBehavior.ALL;
+    }
+
+    /**
      * Creates a new builder for constructing a {@link GuiItem}.
      *
      * @return a new GuiItem builder
@@ -130,6 +143,15 @@ public interface GuiItem {
          */
         @NotNull
         Builder onClick(@NotNull BiConsumer<Player, GuiClickContext> handler);
+
+        /**
+         * Sets the slot behavior - controls which interactions are allowed.
+         *
+         * @param behavior the slot behavior
+         * @return this builder instance for chaining
+         */
+        @NotNull
+        Builder behavior(@NotNull SlotBehavior behavior);
 
         /**
          * Builds the GUI item based on the configured properties.

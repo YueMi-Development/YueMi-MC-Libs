@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.yuemi.libs.api.gui.GuiClickContext;
 import org.yuemi.libs.api.gui.GuiItem;
+import org.yuemi.libs.api.gui.SlotBehavior;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -14,14 +15,17 @@ public final class GuiItemImpl implements GuiItem {
     private final Function<Player, ItemStack> itemProvider;
     private final Predicate<Player> condition;
     private final BiConsumer<Player, GuiClickContext> handler;
+    private final SlotBehavior behavior;
 
     private GuiItemImpl(
             @NotNull Function<Player, ItemStack> itemProvider,
             @NotNull Predicate<Player> condition,
-            @NotNull BiConsumer<Player, GuiClickContext> handler) {
+            @NotNull BiConsumer<Player, GuiClickContext> handler,
+            @NotNull SlotBehavior behavior) {
         this.itemProvider = itemProvider;
         this.condition = condition;
         this.handler = handler;
+        this.behavior = behavior;
     }
 
     @Override
@@ -39,11 +43,17 @@ public final class GuiItemImpl implements GuiItem {
         handler.accept(context.getPlayer(), context);
     }
 
+    @Override
+    public @NotNull SlotBehavior behavior() {
+        return behavior;
+    }
+
     public static final class BuilderImpl implements GuiItem.Builder {
 
         private Function<Player, ItemStack> itemProvider;
         private Predicate<Player> condition = player -> true;
         private BiConsumer<Player, GuiClickContext> handler = (player, context) -> {};
+        private SlotBehavior behavior = SlotBehavior.ALL;
 
         @Override
         public @NotNull GuiItem.Builder item(@NotNull ItemStack itemStack) {
@@ -110,11 +120,17 @@ public final class GuiItemImpl implements GuiItem {
         }
 
         @Override
+        public @NotNull GuiItem.Builder behavior(@NotNull SlotBehavior behavior) {
+            this.behavior = behavior;
+            return this;
+        }
+
+        @Override
         public @NotNull GuiItem build() {
             if (itemProvider == null) {
                 throw new IllegalStateException("ItemStack or ItemProvider must be configured for GuiItem");
             }
-            return new GuiItemImpl(itemProvider, condition, handler);
+            return new GuiItemImpl(itemProvider, condition, handler, behavior);
         }
     }
 }
