@@ -13,6 +13,7 @@ Shared library plugin providing core APIs for other YueMi plugins.
 - `module-economy` - Economy system API
 - `module-items` - Items system API
 - `module-event` - Event system API
+- `module-general` - Compare and format utility APIs
 
 ## Key APIs
 ```java
@@ -32,6 +33,13 @@ economy.withdraw(player, amount);
 // Items API
 ItemsApi items = api.getItems();
 items.giveItem(player, "namespace:id", quantity);
+
+// General API
+GeneralApi general = api.getGeneral();
+general.getCompare().compare(item1, item2);
+general.getFormat().formatNumber(1234567);
+general.getFormat().formatCompact(1500000);
+general.getFormat().formatDuration(3665);
 ```
 
 ## Repositories

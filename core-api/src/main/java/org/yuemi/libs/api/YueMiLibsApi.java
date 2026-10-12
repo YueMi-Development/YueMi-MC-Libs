@@ -41,6 +41,14 @@ public interface YueMiLibsApi {
     org.yuemi.libs.api.event.EventApi getEvents();
 
     /**
+     * Gets the general module API.
+     *
+     * @return the general API manager
+     */
+    @NotNull
+    org.yuemi.libs.api.general.GeneralApi getGeneral();
+
+    /**
      * Gets the version of the YueMi Libs plugin.
      *
      * @return the version string

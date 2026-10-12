@@ -11,6 +11,9 @@ import org.yuemi.libs.api.gui.GuiApi;
 import org.yuemi.libs.plugin.gui.GuiApiImpl;
 import org.yuemi.libs.api.event.EventApi;
 import org.yuemi.libs.plugin.event.EventApiImpl;
+import org.yuemi.libs.api.general.GeneralApi;
+import org.yuemi.libs.api.general.compare.CompareApi;
+import org.yuemi.libs.api.general.format.FormatApi;
 
 final class YueMiLibsApiImpl implements YueMiLibsApi {
 
@@ -19,6 +22,16 @@ final class YueMiLibsApiImpl implements YueMiLibsApi {
     private final ItemsApiImpl items = new ItemsApiImpl();
     private final GuiApiImpl gui = new GuiApiImpl();
     private final EventApiImpl events;
+    private final GeneralApi general = new GeneralApi() {
+        @Override
+        public CompareApi getCompare() {
+            return CompareApi.getInstance();
+        }
+        @Override
+        public FormatApi getFormat() {
+            return FormatApi.getInstance();
+        }
+    };
 
     public YueMiLibsApiImpl(@NotNull YueMiLibsPlugin plugin, @NotNull String version) {
         this.version = version;
@@ -60,6 +73,11 @@ final class YueMiLibsApiImpl implements YueMiLibsApi {
 
     public EventApiImpl getEventsImpl() {
         return events;
+    }
+
+    @Override
+    public @NotNull GeneralApi getGeneral() {
+        return general;
     }
 
     @Override
