@@ -1,0 +1,32 @@
+name: '${pluginName}'
+version: '${version}'
+main: org.yuemi.libs.plugin.YueMiLibsPlugin
+api-version: '${apiVersion}'
+authors: [${authors}]
+contributors: [${contributors}']
+
+# Soft integrations: each runs in its own classloader when Paper's
+# isolated loader is active. Required is false on all of them; every
+# integration degrades gracefully when the soft-dep is missing.
+dependencies:
+  server:
+    Vault:
+      load: AFTER
+      required: false
+      join-classpath: false
+    ProtocolLib:
+      load: AFTER
+      required: false
+      join-classpath: false
+    CraftEngine:
+      load: AFTER
+      required: false
+      join-classpath: false
+    Nexo:
+      load: AFTER
+      required: false
+      join-classpath: false
+    ItemsAdder:
+      load: AFTER
+      required: false
+      join-classpath: false
