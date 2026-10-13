@@ -5,6 +5,8 @@ import org.yuemi.libs.api.gui.GuiApi;
 import org.yuemi.libs.api.gui.GuiBuilder;
 import org.yuemi.libs.api.gui.GuiItem;
 
+import java.util.Collection;
+
 public final class GuiApiImpl implements GuiApi {
 
     @Override
@@ -25,5 +27,27 @@ public final class GuiApiImpl implements GuiApi {
     @Override
     public @NotNull org.yuemi.libs.api.gui.SignInputBuilder createSignInputBuilder() {
         return new SignInputBuilderImpl();
+    }
+
+    /**
+     * Register slot positions that accept items being placed into them.
+     * Used by the click handler to distinguish PLACE from SWAP when slots
+     * contain placeholder items.
+     */
+    public static void registerInputSlots(@NotNull Collection<Integer> positions) {
+        GuiListener listener = GuiListener.getInstance();
+        if (listener != null) {
+            listener.addInputSlots(positions);
+        }
+    }
+
+    /**
+     * Remove slot positions from the input slot registry.
+     */
+    public static void unregisterInputSlots(@NotNull Collection<Integer> positions) {
+        GuiListener listener = GuiListener.getInstance();
+        if (listener != null) {
+            listener.removeInputSlots(positions);
+        }
     }
 }

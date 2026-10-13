@@ -27,14 +27,45 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class GuiListener implements Listener {
 
     private final Plugin plugin;
     private final Set<UUID> anvilSubmitting = Collections.synchronizedSet(new HashSet<>());
+    // Set of slot positions that accept items being placed into them
+    // (across all registered GUIs). Used to distinguish PLACE from SWAP
+    // when the slot has a placeholder item.
+    private final Set<Integer> inputSlotPositions = ConcurrentHashMap.newKeySet();
+
+    private static volatile GuiListener instance;
+
+    public static GuiListener getInstance() {
+        return instance;
+    }
 
     public GuiListener(Plugin plugin) {
         this.plugin = plugin;
+        instance = this;
+    }
+
+    /**
+     * Add input slot positions. Called by plugins that want their slots
+     * to accept items being placed into them.
+     */
+    public void addInputSlots(java.util.Collection<Integer> positions) {
+        inputSlotPositions.addAll(positions);
+    }
+
+    /**
+     * Remove input slot positions.
+     */
+    public void removeInputSlots(java.util.Collection<Integer> positions) {
+        inputSlotPositions.removeAll(positions);
+    }
+
+    public Set<Integer> getInputSlotPositions() {
+        return Collections.unmodifiableSet(inputSlotPositions);
     }
 
     @EventHandler
@@ -366,20 +397,26 @@ public final class GuiListener implements Listener {
     private GuiClickContextImpl.Action determineAction(InventoryClickEvent event, int slot) {
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
-        org.bukkit.event.inventory.InventoryAction action = event.getAction();
 
         if (event.isShiftClick()) {
             return GuiClickContextImpl.Action.SHIFT_CLICK;
         }
-        if (action.name().startsWith("HOTBAR_SWAP") || action == org.bukkit.event.inventory.InventoryAction.HOTBAR_SWAP) {
+        if (event.getAction().name().startsWith("HOTBAR_SWAP") || event.getAction() == org.bukkit.event.inventory.InventoryAction.HOTBAR_SWAP) {
             return GuiClickContextImpl.Action.SWAP;
         }
-        if (cursor != null && !cursor.getType().isAir() && (current == null || current.getType().isAir())) {
-            // Player is placing cursor item into empty slot
-            return GuiClickContextImpl.Action.PLACE;
-        }
-        if (cursor != null && !cursor.getType().isAir() && current != null && !current.getType().isAir()) {
-            // Player is swapping with cursor - can be PICKUP or SWAP
+        if (cursor != null && !cursor.getType().isAir()) {
+            // Player has a cursor item. Check if the current item in the slot is
+            // a placeholder (not a real player item) by looking at the slot's GuiItem behavior.
+            // The listener can be configured with a list of "input slot" positions
+            // where items can be placed.
+            if (current == null || current.getType().isAir()) {
+                return GuiClickContextImpl.Action.PLACE;
+            }
+            // Check if this is a "place into" slot via registered slot positions
+            if (inputSlotPositions.contains(slot)) {
+                return GuiClickContextImpl.Action.PLACE;
+            }
+            // Otherwise it's a swap with existing item
             return GuiClickContextImpl.Action.SWAP;
         }
         if ((cursor == null || cursor.getType().isAir()) && current != null && !current.getType().isAir()) {

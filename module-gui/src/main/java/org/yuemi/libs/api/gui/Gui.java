@@ -90,4 +90,21 @@ public interface Gui {
      */
     @org.jetbrains.annotations.Nullable
     java.util.function.Consumer<Player> getOnClose();
+
+    /**
+     * Registers a set of slot positions that accept items being placed into them.
+     * Used by the click handler to distinguish "place into empty/placeholder slot"
+     * vs "swap with existing item" - which is critical for slots that show placeholders.
+     *
+     * @param positions the slot positions that accept placing items
+     */
+    void registerInputSlots(@NotNull java.util.Collection<Integer> positions);
+
+    /**
+     * Gets the registered input slot positions.
+     *
+     * @return the set of slot positions that accept placing items
+     */
+    @NotNull
+    java.util.Set<Integer> getInputSlots();
 }

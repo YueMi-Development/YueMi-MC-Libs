@@ -25,6 +25,7 @@ public final class GuiImpl implements Gui {
     private final Map<String, GuiLayer> layers = new ConcurrentHashMap<>();
     private ClosePolicy closePolicy = ClosePolicy.CLOSE;
     private java.util.function.Consumer<Player> onClose;
+    private final java.util.Set<Integer> inputSlots = ConcurrentHashMap.newKeySet();
 
     public GuiImpl(@NotNull String title, int rows) {
         this.title = title;
@@ -47,6 +48,16 @@ public final class GuiImpl implements Gui {
 
     public void setOnClose(java.util.function.Consumer<Player> onClose) {
         this.onClose = onClose;
+    }
+
+    @Override
+    public void registerInputSlots(@NotNull java.util.Collection<Integer> positions) {
+        inputSlots.addAll(positions);
+    }
+
+    @Override
+    public @NotNull java.util.Set<Integer> getInputSlots() {
+        return java.util.Collections.unmodifiableSet(inputSlots);
     }
 
     @Override
