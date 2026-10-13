@@ -176,7 +176,7 @@ public final class GuiListener implements Listener {
 
         // Check per-slot behavior
         SlotBehavior behavior = clickedItem.behavior();
-        org.yuemi.libs.api.gui.GuiClickContext.Action action = determineAction(event);
+        org.yuemi.libs.api.gui.GuiClickContext.Action action = determineAction(event, event.getSlot(), gui);
 
         if (!isActionAllowed(behavior, action, event)) {
             event.setCancelled(true);
@@ -391,10 +391,14 @@ public final class GuiListener implements Listener {
     }
 
     private GuiClickContextImpl.Action determineAction(InventoryClickEvent event) {
-        return determineAction(event, event.getSlot());
+        return determineAction(event, event.getSlot(), null);
     }
 
     private GuiClickContextImpl.Action determineAction(InventoryClickEvent event, int slot) {
+        return determineAction(event, slot, null);
+    }
+
+    private GuiClickContextImpl.Action determineAction(InventoryClickEvent event, int slot, Gui gui) {
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
 
@@ -412,7 +416,10 @@ public final class GuiListener implements Listener {
             if (current == null || current.getType().isAir()) {
                 return GuiClickContextImpl.Action.PLACE;
             }
-            // Check if this is a "place into" slot via registered slot positions
+            // Per-GUI input slots, then global input slots registered via GuiApi.
+            if (gui != null && gui.getInputSlots().contains(slot)) {
+                return GuiClickContextImpl.Action.PLACE;
+            }
             if (inputSlotPositions.contains(slot)) {
                 return GuiClickContextImpl.Action.PLACE;
             }

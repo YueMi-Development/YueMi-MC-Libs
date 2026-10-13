@@ -29,12 +29,28 @@ public final class GuiApiImpl implements GuiApi {
         return new SignInputBuilderImpl();
     }
 
+    @Override
+    public void registerInputSlots(@NotNull Collection<Integer> positions) {
+        GuiListener listener = GuiListener.getInstance();
+        if (listener != null) {
+            listener.addInputSlots(positions);
+        }
+    }
+
+    @Override
+    public void unregisterInputSlots(@NotNull Collection<Integer> positions) {
+        GuiListener listener = GuiListener.getInstance();
+        if (listener != null) {
+            listener.removeInputSlots(positions);
+        }
+    }
+
     /**
-     * Register slot positions that accept items being placed into them.
-     * Used by the click handler to distinguish PLACE from SWAP when slots
-     * contain placeholder items.
+     * Static accessor kept for backwards compatibility with plugins that call this
+     * method via reflection. Prefer {@link #registerInputSlots(Collection)} for
+     * compile-time access.
      */
-    public static void registerInputSlots(@NotNull Collection<Integer> positions) {
+    public static void registerInputSlotsStatic(@NotNull Collection<Integer> positions) {
         GuiListener listener = GuiListener.getInstance();
         if (listener != null) {
             listener.addInputSlots(positions);
@@ -42,9 +58,9 @@ public final class GuiApiImpl implements GuiApi {
     }
 
     /**
-     * Remove slot positions from the input slot registry.
+     * Static accessor kept for backwards compatibility.
      */
-    public static void unregisterInputSlots(@NotNull Collection<Integer> positions) {
+    public static void unregisterInputSlotsStatic(@NotNull Collection<Integer> positions) {
         GuiListener listener = GuiListener.getInstance();
         if (listener != null) {
             listener.removeInputSlots(positions);
