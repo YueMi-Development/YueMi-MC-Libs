@@ -14,6 +14,7 @@ import org.yuemi.libs.plugin.event.EventApiImpl;
 import org.yuemi.libs.api.general.GeneralApi;
 import org.yuemi.libs.api.general.compare.CompareApi;
 import org.yuemi.libs.api.general.format.FormatApi;
+import org.yuemi.libs.api.general.random.RandomApi;
 
 final class YueMiLibsApiImpl implements YueMiLibsApi {
 
@@ -30,6 +31,10 @@ final class YueMiLibsApiImpl implements YueMiLibsApi {
         @Override
         public FormatApi getFormat() {
             return FormatApi.getInstance();
+        }
+        @Override
+        public RandomApi getRandom() {
+            return RandomApi.getInstance();
         }
     };
 
