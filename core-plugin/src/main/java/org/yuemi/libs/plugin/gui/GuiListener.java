@@ -13,7 +13,8 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.yuemi.libs.api.folia.FoliaSchedulers;
 import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.Gui;
 import org.yuemi.libs.api.gui.GuiClickContext;
@@ -31,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class GuiListener implements Listener {
 
-    private final Plugin plugin;
+    private final JavaPlugin plugin;
     private final Set<UUID> anvilSubmitting = Collections.synchronizedSet(new HashSet<>());
     // Set of slot positions that accept items being placed into them
     // (across all registered GUIs). Used to distinguish PLACE from SWAP
@@ -44,7 +45,7 @@ public final class GuiListener implements Listener {
         return instance;
     }
 
-    public GuiListener(Plugin plugin) {
+    public GuiListener(JavaPlugin plugin) {
         this.plugin = plugin;
         instance = this;
     }
@@ -131,7 +132,7 @@ public final class GuiListener implements Listener {
                     player.closeInventory();
                     finalAnvilHolder.getOnSubmit().accept(player, finalResultText);
                 } else {
-                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+                    FoliaSchedulers.executeGlobal(plugin, () -> {
                         player.closeInventory();
                         finalAnvilHolder.getOnSubmit().accept(player, finalResultText);
                     });
@@ -257,7 +258,7 @@ public final class GuiListener implements Listener {
             if (!anvilSubmitting.remove(player.getUniqueId())) {
                 ClosePolicy policy = finalHolder.getClosePolicy();
                 if (policy == ClosePolicy.REOPEN) {
-                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> finalHolder.open(player));
+                    FoliaSchedulers.executeGlobal(plugin, () -> finalHolder.open(player));
                 } else if (policy == ClosePolicy.CLOSE) {
                     finalHolder.getOnClose().accept(player);
                 }
@@ -270,7 +271,7 @@ public final class GuiListener implements Listener {
             Gui gui = guiHolder.getGui();
             ClosePolicy policy = gui.getClosePolicy();
             if (policy == ClosePolicy.REOPEN) {
-                org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> gui.open(player));
+                FoliaSchedulers.executeGlobal(plugin, () -> gui.open(player));
             } else if (policy == ClosePolicy.CLOSE && gui.getOnClose() != null) {
                 gui.getOnClose().accept(player);
             }
@@ -495,7 +496,7 @@ public final class GuiListener implements Listener {
 
             // Enforce reopen close policy if closed/submitted empty or unchanged text
             if (session.getClosePolicy() == ClosePolicy.REOPEN && (text.isEmpty() || text.equals(session.getInitialText()))) {
-                org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> session.getBuilder().open(player));
+                FoliaSchedulers.executeGlobal(plugin, () -> session.getBuilder().open(player));
                 return;
             }
 

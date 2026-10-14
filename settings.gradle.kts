@@ -14,6 +14,8 @@ plugins {
 rootProject.name = "YueMi-MC-Libs"
 include("core-api")
 include("core-plugin")
+include("module-platform")
+include("module-folia")
 include("module-economy")
 include("module-items")
 include("module-gui")

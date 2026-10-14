@@ -4,6 +4,10 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yuemi.libs.api.YueMiLibsApi;
 
+import org.yuemi.libs.api.folia.FoliaSchedulers;
+import org.yuemi.libs.api.platform.PlatformProvider;
+import org.yuemi.libs.folia.FoliaSchedulerImpl;
+import org.yuemi.libs.impl.platform.PlatformDetectorImpl;
 import org.yuemi.libs.plugin.bstats.BStatsService;
 
 public final class YueMiLibsPlugin extends JavaPlugin {
@@ -13,6 +17,12 @@ public final class YueMiLibsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         BStatsService.initialize(this);
+
+        // Initialize platform detection and scheduler
+        PlatformProvider.set(new PlatformDetectorImpl());
+        FoliaSchedulers.set(new FoliaSchedulerImpl(getServer()));
+        getLogger().info("Running on platform: " + PlatformProvider.platform());
+
         // Check and migrate version
         new org.yuemi.config.api.ConfigManager(this, "org.yuemi.libs.plugin.config.migrations").loadAndMigrate(this);
         reloadConfig();
@@ -100,6 +110,7 @@ public final class YueMiLibsPlugin extends JavaPlugin {
             api.getEventsImpl().disable();
             getServer().getServicesManager().unregister(YueMiLibsApi.class, api);
         }
+        FoliaSchedulers.get().cancelAll(this);
         getLogger().info("YueMi Libs has been disabled.");
     }
 }

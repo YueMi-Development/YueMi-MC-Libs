@@ -17,8 +17,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.yuemi.libs.api.folia.FoliaScheduler;
+import org.yuemi.libs.api.folia.FoliaSchedulers;
 import org.yuemi.libs.api.gui.AnvilInputBuilder;
 import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.SignInputBuilder;
@@ -38,13 +40,14 @@ public class TextInputIntegrationTest {
     private UUID playerUuid;
     private InventoryView mockView;
     private Inventory mockInventory;
-    private Plugin mockPlugin;
+    private JavaPlugin mockPlugin;
     private Server mockServer;
     private BukkitScheduler mockScheduler;
+    private FoliaScheduler mockFoliaScheduler;
 
     @BeforeEach
     public void setUp() {
-        mockPlugin = mock(Plugin.class);
+        mockPlugin = mock(JavaPlugin.class);
         listener = new GuiListener(mockPlugin);
         mockPlayer = mock(Player.class);
         playerUuid = UUID.randomUUID();
@@ -70,6 +73,9 @@ public class TextInputIntegrationTest {
         mockScheduler = mock(BukkitScheduler.class);
         when(mockServer.getScheduler()).thenReturn(mockScheduler);
         setBukkitServer(mockServer);
+
+        mockFoliaScheduler = mock(FoliaScheduler.class);
+        FoliaSchedulers.set(mockFoliaScheduler);
     }
 
     private void setBukkitServer(Server server) {
@@ -86,6 +92,7 @@ public class TextInputIntegrationTest {
     public void tearDown() {
         // Reset the server to prevent leakage across tests
         setBukkitServer(null);
+        FoliaSchedulers.set(null);
     }
 
     @Test
@@ -185,7 +192,7 @@ public class TextInputIntegrationTest {
         listener.onInventoryClose(closeEvent);
 
         // Verify task was scheduled to reopen
-        verify(mockScheduler).runTask(eq(mockPlugin), any(Runnable.class));
+        verify(mockFoliaScheduler).executeGlobal(eq(mockPlugin), any(Runnable.class));
     }
 
     @Test
@@ -249,6 +256,6 @@ public class TextInputIntegrationTest {
         listener.onSignChange(event);
 
         assertTrue(event.isCancelled());
-        verify(mockScheduler).runTask(eq(mockPlugin), any(Runnable.class));
+        verify(mockFoliaScheduler).executeGlobal(eq(mockPlugin), any(Runnable.class));
     }
 }

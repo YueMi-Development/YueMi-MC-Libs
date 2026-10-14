@@ -4,6 +4,7 @@ main: org.yuemi.libs.plugin.YueMiLibsPlugin
 api-version: '${apiVersion}'
 authors: [${authors}]
 contributors: [${contributors}]
+folia-supported: true
 
 bstats-id: '${bstatsPluginId}'
 

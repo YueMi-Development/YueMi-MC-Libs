@@ -15,6 +15,8 @@ val contributors: String by project
 dependencies {
     implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation(project(":core-api"))
+    implementation(project(":module-platform"))
+    implementation(project(":module-folia"))
     implementation("org.yuemi:mc-config-libs:1.0.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")

@@ -4,6 +4,7 @@ main: org.yuemi.libs.plugin.YueMiLibsPlugin
 api-version: '${apiVersion}'
 authors: [${authors}]
 contributors: [${contributors}']
+folia-supported: true
 
 # Soft integrations: each runs in its own classloader when Paper's
 # isolated loader is active. Required is false on all of them; every
