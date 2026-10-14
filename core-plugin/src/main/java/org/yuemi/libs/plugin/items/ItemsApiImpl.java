@@ -6,7 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yuemi.libs.api.items.ItemProvider;
 import org.yuemi.libs.api.items.ItemsApi;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ItemsApiImpl implements ItemsApi {
@@ -80,5 +82,9 @@ public final class ItemsApiImpl implements ItemsApi {
             return 0;
         }
         return provider.getItemCount(player, parsed.id);
+    }
+
+    public Set<String> getRegisteredNamespaces() {
+        return Collections.unmodifiableSet(providers.keySet());
     }
 }

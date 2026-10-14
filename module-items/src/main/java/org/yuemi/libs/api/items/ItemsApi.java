@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import java.util.Set;
 
 /**
  * Interface to manage item providers and query items using NAMESPACE:ID keys.
@@ -56,4 +57,11 @@ public interface ItemsApi {
      * @return the count of matching items
      */
     int getItemCount(@NotNull Player player, @NotNull String key);
+
+    /**
+     * Returns the set of registered provider namespaces.
+     *
+     * @return unmodifiable set of namespace strings
+     */
+    @NotNull Set<String> getRegisteredNamespaces();
 }
