@@ -40,10 +40,13 @@ jobs:
         module:
           - core-api
           - core-plugin
+          - module-platform
+          - module-folia
           - module-economy
           - module-event
           - module-gui
           - module-items
+          - module-general
       fail-fast: false
 
     name: Test ${{ matrix.module }}
