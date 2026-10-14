@@ -7,7 +7,10 @@ org.yuemi.libs.api.event.bukkit.entity
 org.yuemi.libs.api.event.bukkit.player
 org.yuemi.libs.api.general
 org.yuemi.libs.api.general.compare
+org.yuemi.libs.api.general.drop
+org.yuemi.libs.api.general.drop.cascade
 org.yuemi.libs.api.general.format
+org.yuemi.libs.api.general.random
 org.yuemi.libs.api.gui
 org.yuemi.libs.api.items
 org.yuemi.libs.api.placeholder
