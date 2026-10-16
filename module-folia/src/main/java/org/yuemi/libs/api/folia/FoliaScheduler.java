@@ -117,9 +117,32 @@ public interface FoliaScheduler {
      * @param entity the entity
      * @param task the task to execute
      * @param delayTicks delay in ticks
-     * @param timeoutTicks timeout in ticks (0 = no timeout)
+     * @param timeoutTicks timeout in ticks (0 = no timeout); only honoured on the
+     *                     Paper fallback path, since Folia signals entity removal
+     *                     through the retired callback
      */
     void runEntityDelayed(@NotNull JavaPlugin plugin, @NotNull Entity entity, @NotNull Runnable task, long delayTicks, long timeoutTicks);
+
+    /**
+     * Runs a repeating task on the entity's current region, following the entity
+     * across region boundaries.
+     *
+     * @param plugin the owning plugin
+     * @param entity the entity
+     * @param task the task to execute
+     * @param delayTicks initial delay in ticks
+     * @param periodTicks period in ticks
+     * @return the scheduled task, or null if the entity is already retired
+     */
+    @Nullable Object runEntityTimer(@NotNull JavaPlugin plugin, @NotNull Entity entity, @NotNull Runnable task, long delayTicks, long periodTicks);
+
+    /**
+     * Cancels a single task previously returned by one of the {@code run*Timer} methods.
+     * Accepts the opaque handle as returned; safe to call with {@code null}.
+     *
+     * @param task the handle returned when the task was scheduled
+     */
+    void cancel(@Nullable Object task);
 
     /**
      * Cancels all tasks owned by the given plugin.

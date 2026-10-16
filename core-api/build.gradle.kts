@@ -19,6 +19,8 @@ require(developerId.isNotBlank())
 require(developerName.isNotBlank())
 
 dependencies {
+    api(project(":module-platform"))
+    api(project(":module-folia"))
     api(project(":module-economy"))
     api(project(":module-items"))
     api(project(":module-gui"))
@@ -43,6 +45,8 @@ tasks.named<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     
     // Include sources of the sub-modules
+    from(project(":module-platform").sourceSets.main.get().allSource)
+    from(project(":module-folia").sourceSets.main.get().allSource)
     from(project(":module-economy").sourceSets.main.get().allSource)
     from(project(":module-items").sourceSets.main.get().allSource)
     from(project(":module-gui").sourceSets.main.get().allSource)
@@ -52,6 +56,8 @@ tasks.named<Jar>("sourcesJar") {
 
 tasks.named<Javadoc>("javadoc") {
     // Include sub-modules sources for javadoc generation
+    source(project(":module-platform").sourceSets.main.get().allSource)
+    source(project(":module-folia").sourceSets.main.get().allSource)
     source(project(":module-economy").sourceSets.main.get().allSource)
     source(project(":module-items").sourceSets.main.get().allSource)
     source(project(":module-gui").sourceSets.main.get().allSource)
@@ -59,6 +65,8 @@ tasks.named<Javadoc>("javadoc") {
     source(project(":module-general").sourceSets.main.get().allSource)
     
     classpath += files(
+        project(":module-platform").sourceSets.main.get().compileClasspath,
+        project(":module-folia").sourceSets.main.get().compileClasspath,
         project(":module-economy").sourceSets.main.get().compileClasspath,
         project(":module-items").sourceSets.main.get().compileClasspath,
         project(":module-gui").sourceSets.main.get().compileClasspath,
@@ -85,6 +93,8 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
     archiveClassifier.set("") // Main artifact classifier is empty
 
     // Merge compiled classes and resources of the sub-modules
+    from(project(":module-platform").sourceSets.main.get().output)
+    from(project(":module-folia").sourceSets.main.get().output)
     from(project(":module-economy").sourceSets.main.get().output)
     from(project(":module-items").sourceSets.main.get().output)
     from(project(":module-gui").sourceSets.main.get().output)

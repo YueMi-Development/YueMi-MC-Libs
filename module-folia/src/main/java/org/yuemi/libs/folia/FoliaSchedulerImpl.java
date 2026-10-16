@@ -120,9 +120,30 @@ public final class FoliaSchedulerImpl implements FoliaScheduler {
     @Override
     public void runEntityDelayed(@NotNull JavaPlugin plugin, @NotNull Entity entity, @NotNull Runnable task, long delayTicks, long timeoutTicks) {
         if (PlatformProvider.isFolia()) {
-            entity.getScheduler().runDelayed(plugin, scheduledTask -> task.run(), () -> {}, timeoutTicks);
+            entity.getScheduler().runDelayed(plugin, scheduledTask -> task.run(), () -> {}, delayTicks);
         } else {
             Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
+        }
+    }
+
+    @Override
+    public @Nullable Object runEntityTimer(@NotNull JavaPlugin plugin, @NotNull Entity entity, @NotNull Runnable task, long delayTicks, long periodTicks) {
+        if (PlatformProvider.isFolia()) {
+            return entity.getScheduler().runAtFixedRate(plugin, scheduledTask -> task.run(), () -> {}, delayTicks, periodTicks);
+        } else {
+            return Bukkit.getScheduler().runTaskTimer(plugin, task, delayTicks, periodTicks);
+        }
+    }
+
+    @Override
+    public void cancel(@Nullable Object task) {
+        if (task == null) {
+            return;
+        }
+        if (task instanceof io.papermc.paper.threadedregions.scheduler.ScheduledTask scheduledTask) {
+            scheduledTask.cancel();
+        } else if (task instanceof org.bukkit.scheduler.BukkitTask bukkitTask) {
+            bukkitTask.cancel();
         }
     }
 
