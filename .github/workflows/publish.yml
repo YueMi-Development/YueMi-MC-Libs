@@ -31,6 +31,60 @@ jobs:
       - name: Compile all modules
         run: ./gradlew clean compileJava compileTestJava --no-daemon
 
+  # ── Static analysis (SpotBugs) ─────────────────────────────
+  lint:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Grant gradlew permission
+        run: chmod +x gradlew
+
+      # Fails the job when any finding is reported (ignoreFailures = false)
+      - name: Run SpotBugs
+        run: ./gradlew spotbugsMain --no-daemon
+
+      - name: Summarize SpotBugs findings
+        if: always()
+        run: |
+          {
+            echo "## SpotBugs Findings"
+            echo ""
+            echo "| Module | Findings |"
+            echo "| --- | ---: |"
+            TOTAL=0
+            for report in */build/reports/spotbugs/main.xml; do
+              [ -f "$report" ] || continue
+              MODULE=$(echo "$report" | cut -d/ -f1)
+              COUNT=$(python3 -c "import sys,xml.etree.ElementTree as ET; print(len(ET.parse(sys.argv[1]).getroot().findall('BugInstance')))" "$report")
+              TOTAL=$((TOTAL + COUNT))
+              echo "| \`$MODULE\` | $COUNT |"
+            done
+            echo "| **Total** | **$TOTAL** |"
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload SpotBugs reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-reports
+          path: "*/build/reports/spotbugs/"
+          retention-days: 30
+
   # ── Run tests per module (parallel) ────────────────────────
   test:
     needs: validate
@@ -181,7 +235,7 @@ jobs:
 
   # ── Publish API to Maven & build plugin JAR ────────────────
   publish:
-    needs: prepare
+    needs: [prepare, lint]
     runs-on: ubuntu-latest
 
     steps:
