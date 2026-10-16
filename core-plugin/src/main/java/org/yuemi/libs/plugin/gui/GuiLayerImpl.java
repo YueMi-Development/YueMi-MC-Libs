@@ -19,6 +19,17 @@ public final class GuiLayerImpl implements GuiLayer {
         this.priority = priority;
     }
 
+    /**
+     * Creates a detached copy of {@code source}, so that later mutations of the
+     * original (or of the builder that produced it) cannot affect this instance.
+     *
+     * @param source the layer to copy
+     */
+    public GuiLayerImpl(@NotNull GuiLayer source) {
+        this(source.getId(), source.getPriority());
+        this.items.putAll(source.getItems());
+    }
+
     @Override
     public @NotNull String getId() {
         return id;

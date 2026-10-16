@@ -29,6 +29,6 @@ public final class GuiLayerBuilderImpl implements GuiLayerBuilder {
 
     @Override
     public @NotNull GuiLayer build() {
-        return layer;
+        return new GuiLayerImpl(layer);
     }
 }

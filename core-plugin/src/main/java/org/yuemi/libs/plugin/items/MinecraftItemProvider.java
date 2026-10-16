@@ -98,11 +98,7 @@ public final class MinecraftItemProvider implements ItemProvider {
         }
         ItemStack item = new ItemStack(material, amount);
         if (info.customModelData != null) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.setCustomModelData(info.customModelData);
-                item.setItemMeta(meta);
-            }
+            item.editMeta(meta -> meta.setCustomModelData(info.customModelData));
         }
         return item;
     }

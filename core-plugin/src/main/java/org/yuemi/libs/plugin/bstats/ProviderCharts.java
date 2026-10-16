@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.yuemi.libs.api.YueMiLibsApi;
 import org.yuemi.libs.api.YueMiLibsProvider;
 
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.Set;
 
@@ -33,7 +34,7 @@ public final class ProviderCharts {
             registrar.addCustomChart(new SimplePie("economy_provider", () -> {
                 var provider = api.getEconomy().getActiveProvider();
                 if (provider != null) {
-                    return provider.getName().toLowerCase();
+                    return provider.getName().toLowerCase(Locale.ROOT);
                 }
                 return "none";
             }));

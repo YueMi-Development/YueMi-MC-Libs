@@ -35,9 +35,7 @@ public final class NexoItemProvider implements ItemProvider {
             return null;
         }
         ItemStack item = builder.build();
-        if (item != null) {
-            item.setAmount(amount);
-        }
+        item.setAmount(amount);
         return item;
     }
 

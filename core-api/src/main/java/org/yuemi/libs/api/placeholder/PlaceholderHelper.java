@@ -55,6 +55,16 @@ public final class PlaceholderHelper {
             return plugin.getDescription().getVersion();
         }
 
+        /**
+         * Keeps the {@code equals}/{@code hashCode} contract intact: the inherited
+         * {@link PlaceholderExpansion#equals} is final and compares identifier, author
+         * and version, so the same fields are used here.
+         */
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(getIdentifier(), getAuthor(), getVersion());
+        }
+
         @Override
         public boolean persist() {
             return true;

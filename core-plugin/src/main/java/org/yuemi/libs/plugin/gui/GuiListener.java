@@ -14,6 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 import org.yuemi.libs.api.folia.FoliaSchedulers;
 import org.yuemi.libs.api.gui.ClosePolicy;
 import org.yuemi.libs.api.gui.Gui;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public final class GuiListener implements Listener {
 
@@ -47,7 +49,17 @@ public final class GuiListener implements Listener {
 
     public GuiListener(JavaPlugin plugin) {
         this.plugin = plugin;
-        instance = this;
+        setInstance(this);
+    }
+
+    /**
+     * Publishes this listener as the process-wide instance. Kept separate from the
+     * constructor so the static field is written from a static context.
+     *
+     * @param listener the listener to publish, or null to clear
+     */
+    private static void setInstance(@Nullable GuiListener listener) {
+        instance = listener;
     }
 
     /**
@@ -111,7 +123,7 @@ public final class GuiListener implements Listener {
                     resultText = anvilHolder.getInitialText();
                 }
                 
-                resultText = org.bukkit.ChatColor.stripColor(resultText);
+                resultText = java.util.Objects.requireNonNullElse(org.bukkit.ChatColor.stripColor(resultText), "");
 
                 // Enforce max length
                 int limit = anvilHolder.getMaxLength();
@@ -272,8 +284,11 @@ public final class GuiListener implements Listener {
             ClosePolicy policy = gui.getClosePolicy();
             if (policy == ClosePolicy.REOPEN) {
                 FoliaSchedulers.executeGlobal(plugin, () -> gui.open(player));
-            } else if (policy == ClosePolicy.CLOSE && gui.getOnClose() != null) {
-                gui.getOnClose().accept(player);
+            } else if (policy == ClosePolicy.CLOSE) {
+                Consumer<Player> onClose = gui.getOnClose();
+                if (onClose != null) {
+                    onClose.accept(player);
+                }
             }
         }
     }
@@ -344,7 +359,7 @@ public final class GuiListener implements Listener {
                         syntheticClick,
                         gui,
                         GuiClickContextImpl.Action.DRAG_PLACE,
-                        cursor != null ? cursor.clone() : null
+                        cursor.clone()
                 );
                 clickedItem.onClick(context);
             }
@@ -391,14 +406,6 @@ public final class GuiListener implements Listener {
         }
     }
 
-    private GuiClickContextImpl.Action determineAction(InventoryClickEvent event) {
-        return determineAction(event, event.getSlot(), null);
-    }
-
-    private GuiClickContextImpl.Action determineAction(InventoryClickEvent event, int slot) {
-        return determineAction(event, slot, null);
-    }
-
     private GuiClickContextImpl.Action determineAction(InventoryClickEvent event, int slot, Gui gui) {
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
@@ -409,7 +416,7 @@ public final class GuiListener implements Listener {
         if (event.getAction().name().startsWith("HOTBAR_SWAP") || event.getAction() == org.bukkit.event.inventory.InventoryAction.HOTBAR_SWAP) {
             return GuiClickContextImpl.Action.SWAP;
         }
-        if (cursor != null && !cursor.getType().isAir()) {
+        if (!cursor.getType().isAir()) {
             // Player has a cursor item. Check if the current item in the slot is
             // a placeholder (not a real player item) by looking at the slot's GuiItem behavior.
             // The listener can be configured with a list of "input slot" positions
@@ -427,7 +434,7 @@ public final class GuiListener implements Listener {
             // Otherwise it's a swap with existing item
             return GuiClickContextImpl.Action.SWAP;
         }
-        if ((cursor == null || cursor.getType().isAir()) && current != null && !current.getType().isAir()) {
+        if (current != null && !current.getType().isAir()) {
             return GuiClickContextImpl.Action.PICKUP;
         }
         return GuiClickContextImpl.Action.LEFT_CLICK;
@@ -440,7 +447,7 @@ public final class GuiListener implements Listener {
     private ItemStack determineInteractedItem(InventoryClickEvent event, int slot) {
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
-        if (cursor != null && !cursor.getType().isAir()) {
+        if (!cursor.getType().isAir()) {
             return cursor.clone();
         }
         if (current != null && !current.getType().isAir()) {
@@ -466,7 +473,7 @@ public final class GuiListener implements Listener {
         if (isCustomAnvil) {
             org.bukkit.inventory.AnvilInventory anvil = event.getInventory();
             anvil.setRepairCost(0);
-            
+
             ItemStack leftItem = anvil.getItem(0);
             if (leftItem != null) {
                 String renameText = anvil.getRenameText();
@@ -474,7 +481,11 @@ public final class GuiListener implements Listener {
                 org.bukkit.inventory.meta.ItemMeta meta = result.getItemMeta();
                 if (meta != null) {
                     meta.setDisplayName(renameText != null ? renameText : "");
-                    result.setItemMeta(meta);
+                    // setItemMeta applies the meta to this stack in place; its boolean
+                    // result only reports whether the item supports metadata.
+                    if (!result.setItemMeta(meta)) {
+                        plugin.getLogger().warning("Failed to apply rename text to the anvil result item.");
+                    }
                 }
                 event.setResult(result);
             }

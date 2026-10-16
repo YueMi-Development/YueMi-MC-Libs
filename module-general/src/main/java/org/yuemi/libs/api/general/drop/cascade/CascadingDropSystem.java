@@ -18,7 +18,7 @@ import java.util.Objects;
  *
  * @param <T> the type of items that can be dropped
  */
-public class CascadingDropSystem<T> {
+public final class CascadingDropSystem<T> {
 
     private final @NotNull RandomApi randomApi;
     private final @NotNull List<Double> rarityChances;

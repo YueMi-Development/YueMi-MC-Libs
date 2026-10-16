@@ -10,6 +10,8 @@ import org.yuemi.libs.folia.FoliaSchedulerImpl;
 import org.yuemi.libs.impl.platform.PlatformDetectorImpl;
 import org.yuemi.libs.plugin.bstats.BStatsService;
 
+import java.util.Locale;
+
 public final class YueMiLibsPlugin extends JavaPlugin {
 
     private YueMiLibsApiImpl api;
@@ -30,7 +32,8 @@ public final class YueMiLibsPlugin extends JavaPlugin {
         this.api = new YueMiLibsApiImpl(this, getDescription().getVersion());
 
         // Read item match mode
-        String matchModeStr = getConfig().getString("providers.minecraft.match-mode", "ID").toUpperCase();
+        String configuredMatchMode = getConfig().getString("providers.minecraft.match-mode", "ID");
+        String matchModeStr = (configuredMatchMode != null ? configuredMatchMode : "ID").toUpperCase(Locale.ROOT);
         org.yuemi.libs.plugin.items.MatchMode matchMode;
         try {
             matchMode = org.yuemi.libs.plugin.items.MatchMode.valueOf(matchModeStr);
@@ -67,7 +70,9 @@ public final class YueMiLibsPlugin extends JavaPlugin {
 
         // Check economy configuration
         boolean economyEnabled = getConfig().getBoolean("hooks.economy.enabled", true);
-        String economyProvider = getConfig().getString("hooks.economy.provider", "Vault").toUpperCase();
+        String configuredEconomyProvider = getConfig().getString("hooks.economy.provider", "Vault");
+        String economyProvider = (configuredEconomyProvider != null ? configuredEconomyProvider : "Vault")
+                .toUpperCase(Locale.ROOT);
 
         if (economyEnabled) {
             switch (economyProvider) {

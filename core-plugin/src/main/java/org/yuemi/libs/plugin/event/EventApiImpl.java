@@ -8,6 +8,7 @@ import org.yuemi.libs.api.event.EventProvider;
 import org.yuemi.libs.api.event.EventSubscription;
 import org.yuemi.libs.api.event.bukkit.BukkitEvents;
 import org.yuemi.libs.plugin.event.bukkit.BukkitEventsImpl;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,12 +33,12 @@ public final class EventApiImpl implements EventApi {
 
     @Override
     public @Nullable EventProvider getProvider(@NotNull String namespace) {
-        return providers.get(namespace.toLowerCase());
+        return providers.get(namespace.toLowerCase(Locale.ROOT));
     }
 
     @Override
     public void registerProvider(@NotNull String namespace, @NotNull EventProvider provider) {
-        providers.put(namespace.toLowerCase(), provider);
+        providers.put(namespace.toLowerCase(Locale.ROOT), provider);
     }
 
     void trackSubscription(@NotNull EventSubscription<?> subscription) {

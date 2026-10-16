@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.yuemi.libs.api.gui.AnvilInputBuilder;
@@ -42,7 +41,7 @@ public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
 
     @Override
     public @NotNull AnvilInputBuilder leftItem(@NotNull ItemStack item) {
-        this.leftItem = item;
+        this.leftItem = item.clone();
         return this;
     }
 
@@ -108,26 +107,25 @@ public final class AnvilInputBuilderImpl implements AnvilInputBuilder {
             } catch (Throwable ignored) {}
 
             Inventory inventory = view.getTopInventory();
-            ItemStack item = leftItem != null ? leftItem.clone() : new ItemStack(Material.PAPER);
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.setDisplayName(initialText);
-                item.setItemMeta(meta);
-            }
-            inventory.setItem(0, item);
+            inventory.setItem(0, buildLeftItem());
         } else {
             AnvilInputHolder holder = new AnvilInputHolder(this);
             Inventory inventory = Bukkit.createInventory(holder, org.bukkit.event.inventory.InventoryType.ANVIL, title);
             holder.setInventory(inventory);
 
-            ItemStack item = leftItem != null ? leftItem.clone() : new ItemStack(Material.PAPER);
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.setDisplayName(initialText);
-                item.setItemMeta(meta);
-            }
-            inventory.setItem(0, item);
+            inventory.setItem(0, buildLeftItem());
             player.openInventory(inventory);
         }
+    }
+
+    /**
+     * Builds the left-slot item carrying the initial text as its display name.
+     *
+     * @return a new item stack for slot 0
+     */
+    private @NotNull ItemStack buildLeftItem() {
+        ItemStack item = leftItem != null ? leftItem.clone() : new ItemStack(Material.PAPER);
+        item.editMeta(meta -> meta.setDisplayName(initialText));
+        return item;
     }
 }

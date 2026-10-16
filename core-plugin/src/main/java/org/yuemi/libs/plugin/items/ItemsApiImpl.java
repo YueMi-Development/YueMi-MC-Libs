@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.yuemi.libs.api.items.ItemProvider;
 import org.yuemi.libs.api.items.ItemsApi;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,7 @@ public final class ItemsApiImpl implements ItemsApi {
     private final Map<String, ItemProvider> providers = new ConcurrentHashMap<>();
 
     private @Nullable ItemProvider getProviderForNamespace(@NotNull String namespace) {
-        return providers.get(namespace.toLowerCase());
+        return providers.get(namespace.toLowerCase(Locale.ROOT));
     }
 
     private static class ParsedKey {
@@ -34,14 +35,14 @@ public final class ItemsApiImpl implements ItemsApi {
         if (colonIdx == -1) {
             return new ParsedKey("minecraft", key);
         }
-        String namespace = key.substring(0, colonIdx).toLowerCase();
+        String namespace = key.substring(0, colonIdx).toLowerCase(Locale.ROOT);
         String id = key.substring(colonIdx + 1);
         return new ParsedKey(namespace, id);
     }
 
     @Override
     public void registerProvider(@NotNull String namespace, @NotNull ItemProvider provider) {
-        providers.put(namespace.toLowerCase(), provider);
+        providers.put(namespace.toLowerCase(Locale.ROOT), provider);
     }
 
     @Override

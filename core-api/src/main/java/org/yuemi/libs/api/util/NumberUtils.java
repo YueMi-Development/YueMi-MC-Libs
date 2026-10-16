@@ -2,6 +2,7 @@ package org.yuemi.libs.api.util;
 
 import org.jetbrains.annotations.NotNull;
 import java.text.DecimalFormat;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +21,7 @@ public final class NumberUtils {
      * @throws IllegalArgumentException if the format is invalid
      */
     public static double parseSuffix(@NotNull String input) {
-        String clean = input.trim().toLowerCase();
+        String clean = input.trim().toLowerCase(Locale.ROOT);
         if (clean.isEmpty()) {
             throw new IllegalArgumentException("Empty number string");
         }
