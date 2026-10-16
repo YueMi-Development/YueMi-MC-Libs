@@ -5,6 +5,7 @@ org.yuemi.libs.api.event.bukkit
 org.yuemi.libs.api.event.bukkit.block
 org.yuemi.libs.api.event.bukkit.entity
 org.yuemi.libs.api.event.bukkit.player
+org.yuemi.libs.api.folia
 org.yuemi.libs.api.general
 org.yuemi.libs.api.general.compare
 org.yuemi.libs.api.general.drop
@@ -14,4 +15,7 @@ org.yuemi.libs.api.general.random
 org.yuemi.libs.api.gui
 org.yuemi.libs.api.items
 org.yuemi.libs.api.placeholder
+org.yuemi.libs.api.platform
 org.yuemi.libs.api.util
+org.yuemi.libs.folia
+org.yuemi.libs.impl.platform
