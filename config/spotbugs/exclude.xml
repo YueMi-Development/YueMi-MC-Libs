@@ -38,29 +38,4 @@
         </Or>
     </Match>
 
-    <!--
-      NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE
-      Detector: "Possible null pointer dereference on a value returned from a method call".
-
-      Upstream annotation conflict: org.bukkit.inventory.Inventory#getContents() declares the
-      return value as both @Nullable (declaration level) and @NotNull (type annotation on
-      METHOD_RETURN), with @Nullable on the array *elements*. The only consistent reading is
-      "non-null array of nullable elements", which is what these methods already assume: they
-      index the array directly and null-check every element they read. The array itself is
-      always allocated by the server implementation, so the reported dereference cannot happen.
-    -->
-    <Match>
-        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
-        <Or>
-            <Class name="org.yuemi.libs.plugin.items.CraftEngineItemProvider"/>
-            <Class name="org.yuemi.libs.plugin.items.ItemsAdderItemProvider"/>
-            <Class name="org.yuemi.libs.plugin.items.MinecraftItemProvider"/>
-            <Class name="org.yuemi.libs.plugin.items.NexoItemProvider"/>
-        </Or>
-        <Or>
-            <Method name="takeItem"/>
-            <Method name="getItemCount"/>
-        </Or>
-    </Match>
-
 </FindBugsFilter>

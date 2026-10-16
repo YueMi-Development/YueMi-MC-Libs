@@ -135,7 +135,7 @@ public final class MinecraftItemProvider implements ItemProvider {
         }
 
         int remainingToTake = amount;
-        ItemStack[] contents = player.getInventory().getContents();
+        ItemStack[] contents = InventoryContents.of(player);
         for (int i = 0; i < contents.length; i++) {
             ItemStack item = contents[i];
             if (item != null && matches(item, targetTemplate, info.customModelData)) {
@@ -162,7 +162,7 @@ public final class MinecraftItemProvider implements ItemProvider {
         ParsedItemInfo info = parseItemInfo(id);
 
         int count = 0;
-        for (ItemStack item : player.getInventory().getContents()) {
+        for (ItemStack item : InventoryContents.of(player)) {
             if (item != null && matches(item, targetTemplate, info.customModelData)) {
                 count += item.getAmount();
             }

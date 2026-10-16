@@ -107,7 +107,7 @@ public final class CraftEngineItemProvider implements ItemProvider {
             return false;
         }
         int remainingToTake = amount;
-        ItemStack[] contents = player.getInventory().getContents();
+        ItemStack[] contents = InventoryContents.of(player);
         for (int i = 0; i < contents.length; i++) {
             ItemStack item = contents[i];
             if (item != null && matches(item, id)) {
@@ -131,7 +131,7 @@ public final class CraftEngineItemProvider implements ItemProvider {
             return 0;
         }
         int count = 0;
-        for (ItemStack item : player.getInventory().getContents()) {
+        for (ItemStack item : InventoryContents.of(player)) {
             if (item != null && matches(item, id)) {
                 count += item.getAmount();
             }

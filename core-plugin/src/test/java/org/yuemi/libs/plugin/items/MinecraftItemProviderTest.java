@@ -52,9 +52,25 @@ public class MinecraftItemProviderTest {
 
         when(mockItem.getType()).thenReturn(Material.STONE);
 
-        when(mockInventory.getContents()).thenReturn(new ItemStack[]{matchedItem, null});
+        when(mockInventory.getSize()).thenReturn(2);
+        when(mockInventory.getItem(0)).thenReturn(matchedItem);
+        when(mockInventory.getItem(1)).thenReturn(null);
 
         int count = provider.getItemCount(mockPlayer, "stone");
         assertEquals(10, count);
+    }
+
+    @Test
+    public void testEmptyInventory() {
+        doReturn(mockItem).when(provider).getItem(eq("stone"), anyInt());
+
+        org.bukkit.entity.Player mockPlayer = mock(org.bukkit.entity.Player.class);
+        org.bukkit.inventory.PlayerInventory mockInventory = mock(org.bukkit.inventory.PlayerInventory.class);
+
+        when(mockPlayer.getInventory()).thenReturn(mockInventory);
+        when(mockInventory.getSize()).thenReturn(0);
+
+        assertEquals(0, provider.getItemCount(mockPlayer, "stone"));
+        assertFalse(provider.takeItem(mockPlayer, "stone", 1));
     }
 }
