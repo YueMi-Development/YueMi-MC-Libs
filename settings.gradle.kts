@@ -6,6 +6,20 @@
  * This project uses @Incubating APIs which are subject to change.
  */
 
+pluginManagement {
+    // Plugin versions are pinned in gradle.properties, which is not readable from a plugins {} block.
+    val pinnedPluginVersions = java.util.Properties().apply {
+        val propertiesFile = file("gradle.properties")
+        if (propertiesFile.exists()) {
+            propertiesFile.inputStream().use { load(it) }
+        }
+    }
+
+    plugins {
+        id("com.github.spotbugs") version pinnedPluginVersions.getProperty("spotbugsPluginVersion")
+    }
+}
+
 plugins {
     // Apply the foojay-resolver plugin to allow automatic download of JDKs
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"

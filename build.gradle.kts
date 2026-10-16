@@ -1,5 +1,15 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsExtension
+import com.github.spotbugs.snom.SpotBugsTask
+
+plugins {
+    id("com.github.spotbugs") apply false
+}
+
 subprojects {
     apply(plugin = "java")
+    apply(plugin = "com.github.spotbugs")
 
     group = property("group") as String
     version = property("version") as String
@@ -30,9 +40,11 @@ subprojects {
 
     dependencies {
         val paperApiVersion = property("paperApiVersion") as String
+        val spotbugsToolVersion = property("spotbugsToolVersion") as String
         add("compileOnly", "io.papermc.paper:paper-api:$paperApiVersion")
         add("testImplementation", "io.papermc.paper:paper-api:$paperApiVersion")
         add("compileOnly", "me.clip:placeholderapi:2.11.6")
+        add("compileOnly", "com.github.spotbugs:spotbugs-annotations:$spotbugsToolVersion")
 
         // Testing frameworks
         add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.10.2")
@@ -43,5 +55,30 @@ subprojects {
 
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
+    }
+
+    extensions.configure<SpotBugsExtension> {
+        toolVersion.set(property("spotbugsToolVersion") as String)
+        effort.set(Effort.MAX)
+        reportLevel.set(Confidence.LOW)
+        ignoreFailures.set(false)
+        excludeFilter.set(rootProject.file("config/spotbugs/exclude.xml"))
+        maxHeapSize.set("1g")
+    }
+
+    tasks.withType<SpotBugsTask>().configureEach {
+        // Test sources are not analyzed: they mock Bukkit/Paper APIs and produce false positives.
+        if (name.endsWith("Test")) {
+            enabled = false
+        }
+
+        // The reports container is empty by default, so reports must be requested explicitly.
+        reports.create("html") {
+            required.set(true)
+            setStylesheet("fancy-hist.xsl")
+        }
+        reports.create("xml") {
+            required.set(true)
+        }
     }
 }

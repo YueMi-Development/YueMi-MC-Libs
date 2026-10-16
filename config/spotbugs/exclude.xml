@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs exclude filter for YueMi-MC-Libs.
+
+  Every entry MUST carry a comment naming the detector and stating why the finding is
+  a false positive or an intentional API contract. Findings that are real defects are
+  fixed in the source instead of being listed here.
+
+  Detector reference: https://spotbugs.readthedocs.io/en/stable/bugDescriptions.html
+-->
+<FindBugsFilter>
+
+    <!--
+      EI_EXPOSE_REP / EI_EXPOSE_REP2 / MS_EXPOSE_REP
+      Detector: "May expose internal representation by returning/storing reference to mutable object".
+
+      These classes are Bukkit integration points. Their whole purpose is to hand out the live
+      server-owned object (Player, Inventory, ItemStack, Location, Gui, Plugin, ...) so the caller
+      can act on it, or to keep the instance the server gave us. Defensive copies would break the
+      contract: a copied Inventory is not the open inventory, and a copied Player is not the player.
+      The objects are also not owned by this library, so copying them provides no encapsulation.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,MS_EXPOSE_REP"/>
+        <Or>
+            <Class name="org.yuemi.libs.plugin.gui.GuiClickContextImpl"/>
+            <Class name="org.yuemi.libs.plugin.gui.GuiHolder"/>
+            <Class name="org.yuemi.libs.plugin.gui.AnvilInputHolder"/>
+            <Class name="org.yuemi.libs.plugin.gui.GuiListener"/>
+            <Class name="org.yuemi.libs.plugin.gui.SignInputBuilderImpl$SignSession"/>
+            <Class name="org.yuemi.libs.plugin.event.SubscriptionBuilderImpl"/>
+            <Class name="org.yuemi.libs.plugin.event.bukkit.BukkitEventsImpl"/>
+            <Class name="org.yuemi.libs.plugin.listeners.ItemsAdderLoadDataListener"/>
+            <Class name="org.yuemi.libs.plugin.listeners.NexoItemsLoadedListener"/>
+            <Class name="org.yuemi.libs.plugin.YueMiLibsApiImpl"/>
+            <Class name="org.yuemi.libs.folia.FoliaSchedulerImpl"/>
+            <Class name="org.yuemi.libs.api.general.random.RandomApi"/>
+        </Or>
+    </Match>
+
+</FindBugsFilter>
