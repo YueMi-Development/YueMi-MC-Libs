@@ -32,10 +32,25 @@ jobs:
       - name: Compile all modules
         run: ./gradlew clean compileJava compileTestJava --no-daemon
 
-  # ── Static analysis (SpotBugs) ─────────────────────────────
+  # ── Static analysis per module (SpotBugs, parallel) ────────
   lint:
     needs: validate
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - core-api
+          - core-plugin
+          - module-platform
+          - module-folia
+          - module-economy
+          - module-event
+          - module-gui
+          - module-items
+          - module-general
+      fail-fast: false
+
+    name: Lint ${{ matrix.module }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,34 +71,29 @@ jobs:
         run: chmod +x gradlew
 
       # Fails the job when any finding is reported (ignoreFailures = false)
-      - name: Run SpotBugs
-        run: ./gradlew spotbugsMain --no-daemon
+      - name: Run SpotBugs on ${{ matrix.module }}
+        run: ./gradlew :${{ matrix.module }}:spotbugsMain --no-daemon
 
       - name: Summarize SpotBugs findings
         if: always()
         run: |
+          REPORT="${{ matrix.module }}/build/reports/spotbugs/main.xml"
           {
-            echo "## SpotBugs Findings"
+            echo "## SpotBugs: ${{ matrix.module }}"
             echo ""
-            echo "| Module | Findings |"
-            echo "| --- | ---: |"
-            TOTAL=0
-            for report in */build/reports/spotbugs/main.xml; do
-              [ -f "$report" ] || continue
-              MODULE=$(echo "$report" | cut -d/ -f1)
-              COUNT=$(python3 -c "import sys,xml.etree.ElementTree as ET; print(len(ET.parse(sys.argv[1]).getroot().findall('BugInstance')))" "$report")
-              TOTAL=$((TOTAL + COUNT))
-              echo "| \`$MODULE\` | $COUNT |"
-            done
-            echo "| **Total** | **$TOTAL** |"
-          } >> $GITHUB_STEP_SUMMARY
+            if [ -f "$REPORT" ]; then
+              echo "Findings: **$(grep -c '<BugInstance' "$REPORT" || true)**"
+            else
+              echo "No report produced - the analysis did not run."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload SpotBugs reports
+      - name: Upload SpotBugs report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: spotbugs-reports
-          path: "*/build/reports/spotbugs/"
+          name: spotbugs-report-${{ matrix.module }}
+          path: ${{ matrix.module }}/build/reports/spotbugs/
           retention-days: 30
 
   # ── Run tests per module (parallel) ────────────────────────
