@@ -130,3 +130,14 @@ To build the plugin JAR (which is located at `core-plugin/build/libs/core-plugin
 # Linux / macOS
 ./gradlew build
 ```
+
+### Static Analysis
+
+[SpotBugs](https://spotbugs.github.io/) runs over all main sources and gates the build — any finding fails `./gradlew build` and CI.
+
+```bash
+./gradlew spotbugsMain              # all modules
+./gradlew :core-plugin:spotbugsMain # one module
+```
+
+Reports are written to `<module>/build/reports/spotbugs/main.html` (and `main.xml`). Known false positives are listed with a documented reason in `config/spotbugs/exclude.xml`; real defects are fixed in the source.

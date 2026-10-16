@@ -48,3 +48,16 @@ general.getFormat().formatDuration(3665);
 - YueMi: `https://repo.yuemi.my.id/repository/maven-public/`
 - Momirealms: `https://repo.momirealms.net/releases/`
 - PlaceholderAPI: `https://repo.extendedclip.com/content/repositories/placeholderapi/`
+
+## Linting
+SpotBugs (`com.github.spotbugs` 6.5.13, engine 4.10.5) gates the build. It runs at `effort = MAX` / `reportLevel = LOW` over main sources only — test sources are skipped because they mock Bukkit/Paper APIs.
+
+```bash
+./gradlew spotbugsMain              # all modules
+./gradlew :core-plugin:spotbugsMain # one module
+```
+
+- Reports: `build/reports/spotbugs/main.html` and `main.xml` per module.
+- `ignoreFailures = false`, so any finding fails the build (and CI).
+- False positives go in `config/spotbugs/exclude.xml`, each entry commented with the detector and the reason. Real defects are fixed in the source.
+- Per-site suppression uses `@SuppressFBWarnings("DETECTOR")` with a `justification`; `spotbugs-annotations` is `compileOnly` and never reaches a published POM or the shaded jar.

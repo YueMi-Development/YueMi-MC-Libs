@@ -104,6 +104,8 @@ Do **not** use default packages.
 * No trailing whitespace
 * Braces on the same line
 
+**Static analysis (SpotBugs):** main sources are analyzed at `effort = MAX` / `reportLevel = LOW` and any finding fails the build. Run `./gradlew spotbugsMain` before committing. Fix real defects in the source; suppress a genuine false positive either with a commented entry in `config/spotbugs/exclude.xml` or an `@SuppressFBWarnings("DETECTOR")` annotation carrying a `justification`. A suppression without a stated reason is not acceptable.
+
 Example:
 
 ```java
